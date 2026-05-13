@@ -67,7 +67,6 @@ def init_db():
         ]
         
         for rule in default_rules:
-            # Check if rule exists before seeding
             existing = db.query(DetectionRule).filter(DetectionRule.id == rule.id).first()
             if not existing:
                 db.add(rule)
@@ -78,3 +77,4 @@ def init_db():
         print(f"Error seeding database: {e}")
     finally:
         db.close()
+    
