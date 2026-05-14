@@ -1,7 +1,16 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+import re
 
+# Helper function to strip HTML/Script tags to prevent stored XSS injection
+def sanitize_log_text(text: str) -> str:
+    if not text:
+        return text
+    # Strip HTML/script tags
+    clean = re.sub(r'<[^>]*>', '', text)
+    # Escape single/double quotes to prevent DB injection (SQLAlchemy handles this, but extra safety is good)
+    return clean
 
 # --- Security Log Schemas ---
 class SecurityLogCreate(BaseModel):
@@ -18,12 +27,22 @@ class SecurityLogCreate(BaseModel):
     user_id: Optional[str] = Field(None, example="admin")
     timestamp: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
+    @field_validator("message", "raw_payload")
+    @classmethod
+    def sanitize_fields(cls, v: str) -> str:
+        return sanitize_log_text(v)
+
 class SecurityLogResponse(SecurityLogCreate):
     id: int
 
     class Config:
         orm_mode = True
         from_attributes = True
+
+
+class BulkLogIngestionRequest(BaseModel):
+    logs: List[SecurityLogCreate] = Field(..., description="List of structured security logs to ingest in bulk")
+
 
 
 # --- Detection Rule Schemas ---
