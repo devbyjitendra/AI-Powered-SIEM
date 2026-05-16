@@ -6,6 +6,7 @@ from app.core.database import get_db
 from app.core.logging import logger
 from app.models.models import SecurityLog
 from app.models.schemas import BulkLogIngestionRequest, SecurityLogResponse, SecurityLogCreate
+from app.services.parser_service import resolve_geoip, parse_user_agent
 
 router = APIRouter()
 
@@ -20,6 +21,10 @@ def ingest_logs(payload: BulkLogIngestionRequest, db: Session = Depends(get_db))
     db_logs = []
     try:
         for log_data in payload.logs:
+            # Auto-enrich geo location and user agent information
+            geo = log_data.geo_country or resolve_geoip(log_data.source_ip)
+            ua = parse_user_agent(log_data.user_agent) if log_data.user_agent else "System Agent"
+            
             db_log = SecurityLog(
                 event_type=log_data.event_type,
                 severity=log_data.severity,
@@ -29,8 +34,8 @@ def ingest_logs(payload: BulkLogIngestionRequest, db: Session = Depends(get_db))
                 destination_ip=log_data.destination_ip,
                 source_port=log_data.source_port,
                 destination_port=log_data.destination_port,
-                geo_country=log_data.geo_country,
-                user_agent=log_data.user_agent,
+                geo_country=geo,
+                user_agent=ua,
                 user_id=log_data.user_id,
                 timestamp=log_data.timestamp
             )
