@@ -5,18 +5,27 @@ from typing import List
 from app.core.database import get_db
 from app.core.logging import logger
 from app.models.models import SecurityLog
-from app.models.schemas import BulkLogIngestionRequest, SecurityLogResponse, SecurityLogCreate
+from app.models.schemas import BulkLogIngestionRequest, SecurityLogResponse, SecurityLogCreate, LogIngestionResponse
 from app.services.parser_service import resolve_geoip, parse_user_agent
+from app.services.queue_service import enqueue_logs
 
 router = APIRouter()
 
-@router.post("/ingest", response_model=List[SecurityLogResponse], status_code=status.HTTP_201_CREATED)
-def ingest_logs(payload: BulkLogIngestionRequest, db: Session = Depends(get_db)):
+@router.post("/ingest", response_model=LogIngestionResponse, status_code=status.HTTP_201_CREATED)
+async def ingest_logs(payload: BulkLogIngestionRequest, async_mode: bool = False, db: Session = Depends(get_db)):
     """
     Ingest a batch of structured security logs.
-    Parses and sanitizes the logs before saving them to the database.
+    Supports synchronous DB writes (default) or high-throughput async processing via background queues.
     """
-    logger.info(f"Ingesting a batch of {len(payload.logs)} logs...")
+    if async_mode:
+        await enqueue_logs(payload.logs)
+        return LogIngestionResponse(
+            status="queued",
+            message="Logs successfully added to processing queue.",
+            count=len(payload.logs)
+        )
+
+    logger.info(f"Ingesting a batch of {len(payload.logs)} logs (sync)...")
     
     db_logs = []
     try:
@@ -49,7 +58,12 @@ def ingest_logs(payload: BulkLogIngestionRequest, db: Session = Depends(get_db))
             db.refresh(db_log)
             
         logger.info(f"Successfully ingested {len(db_logs)} logs.")
-        return db_logs
+        return LogIngestionResponse(
+            status="success",
+            message="Logs processed synchronously and persisted to database.",
+            count=len(db_logs),
+            logs=db_logs
+        )
         
     except Exception as e:
         db.rollback()

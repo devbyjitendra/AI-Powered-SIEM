@@ -44,6 +44,14 @@ class BulkLogIngestionRequest(BaseModel):
     logs: List[SecurityLogCreate] = Field(..., description="List of structured security logs to ingest in bulk")
 
 
+class LogIngestionResponse(BaseModel):
+    status: str = Field(..., example="success")
+    message: str = Field(..., example="Logs processed successfully")
+    count: int = Field(..., example=2)
+    logs: Optional[List[SecurityLogResponse]] = Field(None, description="Ingested log details (only populated in sync mode)")
+
+
+
 
 # --- Detection Rule Schemas ---
 class DetectionRuleCreate(BaseModel):

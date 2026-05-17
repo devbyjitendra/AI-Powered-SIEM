@@ -28,14 +28,17 @@ def test_bulk_log_ingestion(client):
     assert response.status_code == 201
     
     data = response.json()
-    assert len(data) == 2
-    assert data[0]["id"] is not None
-    assert data[0]["event_type"] == "auth"
-    assert data[0]["source_ip"] == "192.168.1.100"
+    assert data["status"] == "success"
+    assert data["count"] == 2
+    logs_list = data["logs"]
+    assert len(logs_list) == 2
+    assert logs_list[0]["id"] is not None
+    assert logs_list[0]["event_type"] == "auth"
+    assert logs_list[0]["source_ip"] == "192.168.1.100"
     
-    assert data[1]["id"] is not None
-    assert data[1]["event_type"] == "web"
-    assert data[1]["source_ip"] == "203.0.113.45"
+    assert logs_list[1]["id"] is not None
+    assert logs_list[1]["event_type"] == "web"
+    assert logs_list[1]["source_ip"] == "203.0.113.45"
 
 def test_ingestion_sanitization(client):
     """
@@ -57,5 +60,7 @@ def test_ingestion_sanitization(client):
     assert response.status_code == 201
     
     data = response.json()
-    assert data[0]["message"] == "alert('XSS')Malicious Payload"
-    assert data[0]["raw_payload"] == ""
+    assert data["status"] == "success"
+    logs_list = data["logs"]
+    assert logs_list[0]["message"] == "alert('XSS')Malicious Payload"
+    assert logs_list[0]["raw_payload"] == ""

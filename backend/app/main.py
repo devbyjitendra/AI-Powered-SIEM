@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.core.database import init_db, get_db
 from app.core.logging import logger
 from app.api.v1.endpoints import logs
+from app.services.queue_service import start_worker, stop_worker
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -25,9 +26,10 @@ app.add_middleware(
 )
 
 @app.on_event("startup")
-def on_startup():
+async def on_startup():
     """
-    FastAPI startup hook to initialize the database schema and seed default detection rules.
+    FastAPI startup hook to initialize database schemas, seed detection rules,
+    and launch the background log ingestion queue worker.
     """
     logger.info("Starting up AI-Powered SIEM Backend...")
     try:
@@ -35,6 +37,17 @@ def on_startup():
         logger.info("Database initialized and default rules seeded successfully.")
     except Exception as e:
         logger.critical(f"Database initialization failed: {e}")
+    
+    # Start background ingestion consumer queue
+    start_worker()
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    """
+    FastAPI shutdown hook to safely drain queues and close background tasks.
+    """
+    logger.info("Shutting down AI-Powered SIEM Backend...")
+    await stop_worker()
 
 # Register routers
 app.include_router(logs.router, prefix="/api/v1/logs", tags=["Logs"])
