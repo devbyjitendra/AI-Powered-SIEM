@@ -4,10 +4,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from app.core.config import settings
-from app.core.database import init_db, get_db
+from app.core.database import init_db, get_db, SessionLocal
 from app.core.logging import logger
 from app.api.v1.endpoints import logs
 from app.services.queue_service import start_worker, stop_worker
+from app.services.rule_loader import refresh_rules
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -29,12 +30,21 @@ app.add_middleware(
 async def on_startup():
     """
     FastAPI startup hook to initialize database schemas, seed detection rules,
-    and launch the background log ingestion queue worker.
+    load rules to the in-memory cache registry, and launch the background
+    log ingestion queue worker.
     """
     logger.info("Starting up AI-Powered SIEM Backend...")
     try:
         init_db()
         logger.info("Database initialized and default rules seeded successfully.")
+        
+        # Load rules into cache memory
+        db = SessionLocal()
+        try:
+            refresh_rules(db)
+        finally:
+            db.close()
+            
     except Exception as e:
         logger.critical(f"Database initialization failed: {e}")
     
