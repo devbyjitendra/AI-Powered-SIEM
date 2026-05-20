@@ -5,6 +5,7 @@ from app.core.logging import logger
 from app.models.models import SecurityLog
 from app.models.schemas import SecurityLogCreate
 from app.services.parser_service import resolve_geoip, parse_user_agent
+from app.services.correlation_engine import correlate_log
 
 # Thread-safe asyncio Queue
 log_queue = asyncio.Queue()
@@ -39,6 +40,7 @@ async def log_worker() -> None:
             
             db = SessionLocal()
             try:
+                db_logs = []
                 for item in batch:
                     # Enrich Geo-IP and User-Agent
                     geo = item.geo_country or resolve_geoip(item.source_ip)
@@ -59,7 +61,14 @@ async def log_worker() -> None:
                         timestamp=item.timestamp
                     )
                     db.add(db_log)
+                    db_logs.append(db_log)
                 db.commit()
+                
+                # Execute threat correlation checks on the newly stored security logs
+                for db_log in db_logs:
+                    db.refresh(db_log)
+                    correlate_log(db_log, db)
+                    
             except Exception as e:
                 db.rollback()
                 logger.error(f"Error persisting async batch to database: {e}", exc_info=True)
