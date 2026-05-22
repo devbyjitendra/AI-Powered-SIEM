@@ -6,7 +6,7 @@ from sqlalchemy import text
 from app.core.config import settings
 from app.core.database import init_db, get_db, SessionLocal
 from app.core.logging import logger
-from app.api.v1.endpoints import logs
+from app.api.v1.endpoints import logs, rules
 from app.services.queue_service import start_worker, stop_worker
 from app.services.rule_loader import refresh_rules
 
@@ -61,6 +61,7 @@ async def on_shutdown():
 
 # Register routers
 app.include_router(logs.router, prefix="/api/v1/logs", tags=["Logs"])
+app.include_router(rules.router, prefix="/api/v1/rules", tags=["Rules"])
 
 @app.get("/api/v1/health")
 def health_check(db: Session = Depends(get_db)):
