@@ -1,0 +1,97 @@
+:root {
+  /* HSL Color System */
+  --bg-dark: 224, 48%, 6%;         /* Dark background: #070a13 */
+  --bg-card: 224, 38%, 10%;        /* Card background: #0f1322 */
+  --bg-hover: 224, 30%, 16%;       /* Card hover state: #1b213b */
+  --border-color: 224, 25%, 18%;   /* Border outlines: #222a4c */
+  
+  --text-primary: 0, 0%, 100%;     /* Main text: #ffffff */
+  --text-secondary: 224, 25%, 70%; /* Secondary text: #b2bbd6 */
+  --text-muted: 224, 15%, 45%;     /* Muted/inactive details */
+
+  /* Threat Severity Accents */
+  --sev-low: 142, 70%, 50%;        /* Info/Low (Green): #10b981 */
+  --sev-medium: 38, 92%, 50%;      /* Medium (Amber): #f59e0b */
+  --sev-high: 20, 90%, 55%;        /* High (Orange): #f97316 */
+  --sev-critical: 0, 84%, 60%;     /* Critical (Red): #ef4444 */
+
+  /* Theme branding & AI Gradients */
+  --color-primary: 217, 90%, 55%;  /* Blue theme highlight: #2f80ed */
+  --color-ai-glow: 271, 91%, 65%;  /* AI Purple: #a061ff */
+  --color-ai-cyan: 187, 100%, 50%; /* AI Cyan: #00e1ff */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: hsl(var(--bg-dark));
+  color: hsl(var(--text-primary));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Premium Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--bg-dark));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border-color));
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--color-primary));
+}
+
+/* Glassmorphism utility classes */
+.glass-panel {
+  background: rgba(15, 19, 34, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(34, 42, 76, 0.4);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel:hover {
+  border-color: rgba(34, 42, 76, 0.7);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* AI Magic Glowing Gradient */
+.ai-gradient-text {
+  background: linear-gradient(135deg, hsl(var(--color-ai-cyan)), hsl(var(--color-ai-glow)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ai-gradient-btn {
+  background: linear-gradient(135deg, rgba(0, 225, 255, 0.15), rgba(160, 97, 255, 0.15));
+  border: 1px solid rgba(160, 97, 255, 0.3);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.ai-gradient-btn:hover {
+  background: linear-gradient(135deg, rgba(0, 225, 255, 0.25), rgba(160, 97, 255, 0.25));
+  box-shadow: 0 0 15px rgba(160, 97, 255, 0.4);
+  transform: translateY(-1px);
+}
