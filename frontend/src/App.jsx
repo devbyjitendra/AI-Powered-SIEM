@@ -1,22 +1,22 @@
-import React from 'react'
+import React, { useState } from 'react'
+import Sidebar from './components/Sidebar.jsx'
 
 function App() {
+  const [activeTab, setActiveTab] = useState('Dashboard')
+
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      flexDirection: 'column',
-      background: 'hsl(var(--bg-dark))',
-      color: '#fff'
-    }}>
-      <h1 className="ai-gradient-text" style={{ fontSize: '2.5rem', marginBottom: '10px' }}>
-        AI SIEM Command Center
-      </h1>
-      <p style={{ color: 'hsl(var(--text-secondary))' }}>
-        Theme and scaffolding initialized. Sidebar and layout assets loading...
-      </p>
+    <div className="app-layout">
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      
+      {/* Main Dashboard Frame */}
+      <main style={{ flex: 1, padding: '40px', overflowY: 'auto' }}>
+        <h1 className="ai-gradient-text" style={{ fontSize: '2.5rem', marginBottom: '10px' }}>
+          {activeTab}
+        </h1>
+        <p style={{ color: 'hsl(var(--text-secondary))' }}>
+          Displaying content workspace for {activeTab}.
+        </p>
+      </main>
     </div>
   )
 }
