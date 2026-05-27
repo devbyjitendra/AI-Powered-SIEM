@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import Sidebar from './components/Sidebar.jsx'
 import Header from './components/Header.jsx'
 import KPICards from './components/KPICards.jsx'
+import SecurityCharts from './components/SecurityCharts.jsx'
+import ThreatMap from './components/ThreatMap.jsx'
 
 function App() {
   const [activeTab, setActiveTab] = useState('Dashboard')
@@ -33,6 +35,12 @@ function App() {
               
               {/* Stat Counters Grid */}
               <KPICards />
+
+              {/* Timeline & Category Charts */}
+              <SecurityCharts />
+
+              {/* Geographical Map & Top Sources */}
+              <ThreatMap />
             </>
           ) : (
             <>

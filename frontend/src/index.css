@@ -464,4 +464,338 @@ h1, h2, h3, h4, h5, h6 {
   align-items: flex-end;
 }
 
+/* Charts Grid Row */
+.charts-grid-row {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.events-chart-card {
+  flex: 1.8;
+  min-width: 320px;
+}
+
+.donut-chart-card {
+  flex: 1;
+  min-width: 300px;
+}
+
+.chart-container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.chart-header h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.chart-select {
+  background-color: hsl(var(--bg-dark));
+  border: 1px solid hsl(var(--border-color));
+  color: hsl(var(--text-secondary));
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.view-all-link {
+  background: none;
+  border: none;
+  color: hsl(var(--color-primary));
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.view-all-link:hover {
+  text-decoration: underline;
+}
+
+/* Donut Chart Inner Content */
+.donut-chart-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 100%;
+}
+
+.donut-graphic-container {
+  position: relative;
+  width: 160px;
+  height: 160px;
+}
+
+.donut-center-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.donut-total-val {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+.donut-total-lbl {
+  font-size: 0.7rem;
+  color: hsl(var(--text-secondary));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+/* Legend items styles */
+.donut-legend-container {
+  flex: 1;
+}
+
+.donut-legend-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.donut-legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+
+.legend-item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-name {
+  color: hsl(var(--text-secondary));
+}
+
+.legend-value {
+  font-weight: 600;
+  color: #fff;
+}
+
+.legend-pct {
+  color: hsl(var(--text-muted));
+  font-weight: 400;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .charts-grid-row {
+    flex-direction: column;
+  }
+  
+  .donut-chart-wrapper {
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+/* Maps and Attacker Sources Grid Layout */
+.maps-grid-row {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.threat-map-container {
+  flex: 1.8;
+  min-width: 320px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.threat-sources-container {
+  flex: 1;
+  min-width: 300px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-title-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.card-title-header h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Map legend color indicators */
+.map-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.75rem;
+}
+
+.legend-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: hsl(var(--text-secondary));
+}
+
+.legend-indicator .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.svg-map-wrapper {
+  background-color: rgba(7, 10, 19, 0.4);
+  border: 1px solid hsl(var(--border-color));
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.futuristic-svg-map {
+  width: 100%;
+  height: 100%;
+  max-height: 240px;
+}
+
+/* Pulsing Radar Ring Animation */
+.pulsing-radar-ring {
+  transform-origin: center;
+  animation: radarPulse 2s infinite ease-out;
+}
+
+@keyframes radarPulse {
+  0% {
+    r: 4px;
+    opacity: 1;
+    stroke-width: 1.5px;
+  }
+  100% {
+    r: 18px;
+    opacity: 0;
+    stroke-width: 0.5px;
+  }
+}
+
+/* Attacker Sources Table Styles */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.sources-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.sources-table th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--text-muted));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 12px;
+  border-bottom: 1px solid hsl(var(--border-color));
+}
+
+.sources-table td {
+  padding: 12px;
+  font-size: 0.85rem;
+  border-bottom: 1px solid rgba(34, 42, 76, 0.2);
+  vertical-align: middle;
+}
+
+.sources-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ip-cell {
+  font-family: monospace;
+  font-weight: 600;
+  color: #fff;
+}
+
+.country-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: hsl(var(--text-secondary));
+}
+
+.flag-emoji {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.event-count-cell {
+  color: #fff;
+  font-weight: 500;
+}
+
+.risk-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  display: inline-block;
+}
+
+@media (max-width: 900px) {
+  .maps-grid-row {
+    flex-direction: column;
+  }
+}
+
+
+
 
