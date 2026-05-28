@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -9,6 +9,7 @@ from app.core.logging import logger
 from app.api.v1.endpoints import logs, rules, alerts
 from app.services.queue_service import start_worker, stop_worker
 from app.services.rule_loader import refresh_rules
+from app.services.websocket_manager import manager
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -63,6 +64,22 @@ async def on_shutdown():
 app.include_router(logs.router, prefix="/api/v1/logs", tags=["Logs"])
 app.include_router(rules.router, prefix="/api/v1/rules", tags=["Rules"])
 app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["Alerts"])
+
+@app.websocket("/ws/alerts")
+async def websocket_alerts_endpoint(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time security alerts streaming.
+    """
+    await manager.connect(websocket)
+    try:
+        while True:
+            # Maintain connection, handle incoming control messages if any
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        logger.error(f"WebSocket connection error: {e}")
+        manager.disconnect(websocket)
 
 @app.get("/api/v1/health")
 def health_check(db: Session = Depends(get_db)):

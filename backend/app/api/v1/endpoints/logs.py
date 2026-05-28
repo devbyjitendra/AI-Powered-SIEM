@@ -8,6 +8,7 @@ from app.models.models import SecurityLog
 from app.models.schemas import BulkLogIngestionRequest, SecurityLogResponse, SecurityLogCreate, LogIngestionResponse
 from app.services.parser_service import resolve_geoip, parse_user_agent
 from app.services.queue_service import enqueue_logs
+from app.services.correlation_engine import correlate_log
 
 router = APIRouter()
 
@@ -56,6 +57,8 @@ async def ingest_logs(payload: BulkLogIngestionRequest, async_mode: bool = False
         # Refresh the database records to populate the generated IDs and default values
         for db_log in db_logs:
             db.refresh(db_log)
+            # Run correlation checks synchronously
+            correlate_log(db_log, db)
             
         logger.info(f"Successfully ingested {len(db_logs)} logs.")
         return LogIngestionResponse(

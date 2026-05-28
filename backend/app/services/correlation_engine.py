@@ -1,11 +1,15 @@
 import re
+import asyncio
 from datetime import datetime, timedelta
 from typing import Dict, List
 from sqlalchemy.orm import Session
+from fastapi.encoders import jsonable_encoder
 
 from app.models.models import SecurityLog, Alert, DetectionRule
 from app.services.rule_loader import get_active_rules
 from app.core.logging import logger
+from app.services.websocket_manager import manager
+from app.models.schemas import AlertResponse
 
 # In-memory databases to track sliding-window failed logins
 _brute_force_tracker: Dict[str, List[datetime]] = {}
@@ -149,7 +153,7 @@ def _process_distributed_brute_force(log: SecurityLog, rule: DetectionRule, db: 
 
 def _trigger_alert(db: Session, rule: DetectionRule, log: SecurityLog, title: str, description: str) -> None:
     """
-    Creates and commits a new alert record to the database.
+    Creates and commits a new alert record to the database, and broadcasts it to connected WebSocket clients.
     """
     logger.warning(f"🚨 ALERT TRIGGERED: {title} - {description}")
     try:
@@ -163,6 +167,18 @@ def _trigger_alert(db: Session, rule: DetectionRule, log: SecurityLog, title: st
         )
         db.add(alert)
         db.commit()
+        db.refresh(alert)
+        
+        # Broadcast the alert via WebSocket
+        alert_data = jsonable_encoder(AlertResponse.from_orm(alert))
+        try:
+            loop = asyncio.get_running_loop()
+            loop.create_task(manager.broadcast(alert_data))
+        except RuntimeError:
+            # Fallback if there is no running loop in the current thread
+            asyncio.run(manager.broadcast(alert_data))
+            
     except Exception as e:
         db.rollback()
-        logger.error(f"Failed to save alert: {e}", exc_info=True)
+        logger.error(f"Failed to save and broadcast alert: {e}", exc_info=True)
+
