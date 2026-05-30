@@ -91,6 +91,22 @@ def get_fallback_playbook(title: str, severity: str, log_message: str) -> Dict[s
             "suggested_firewall_rule": "iptables -I INPUT -s <SOURCE_IP> -j DROP"
         }
 
+def clean_json_text(text: str) -> str:
+    """
+    Cleans up any markdown wrapper blocks (like ```json ... ```) 
+    that might be returned by the LLM before JSON parsing.
+    """
+    text = text.strip()
+    if text.startswith("```"):
+        # Split lines and remove formatting wrappers
+        lines = text.splitlines()
+        if lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].startswith("```"):
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+    return text
+
 async def generate_security_playbook(
     title: str,
     description: str,
@@ -151,8 +167,9 @@ Output ONLY the JSON object, with no markdown code blocks, backticks, or extra c
             generation_config={"response_mime_type": "application/json"}
         )
         
-        # Parse output JSON
-        data = json.loads(response.text.strip())
+        # Clean and parse output JSON
+        cleaned_text = clean_json_text(response.text)
+        data = json.loads(cleaned_text)
         logger.info("Successfully received and parsed Gemini AI response.")
         return data
 
@@ -162,3 +179,4 @@ Output ONLY the JSON object, with no markdown code blocks, backticks, or extra c
         if playbook.get("suggested_firewall_rule") and source_ip != "Unknown":
             playbook["suggested_firewall_rule"] = playbook["suggested_firewall_rule"].replace("<SOURCE_IP>", source_ip)
         return playbook
+
