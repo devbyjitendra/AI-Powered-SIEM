@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { getAlerts, updateAlertStatus } from '../services/api'
 import { ShieldAlert, AlertCircle, CheckCircle, Clock, Bell } from 'lucide-react'
+import AIPlaybookDrawer from './AIPlaybookDrawer.jsx'
 
 // Mock fallback list matching mockup exactly
 const MOCK_ALERTS = [
@@ -20,6 +21,8 @@ function AlertsGrid() {
   const [alerts, setAlerts] = useState([])
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState({ visible: false, title: '', message: '', severity: '' })
+  const [selectedAlertId, setSelectedAlertId] = useState(null)
+
 
   const loadAlerts = async () => {
     setLoading(true)
@@ -186,9 +189,14 @@ function AlertsGrid() {
                   return (
                     <tr key={alert.id} className={`alert-row severity-${sev}`}>
                       <td className="time-cell">{formatTime(alert.timestamp)}</td>
-                      <td className="alert-title-cell">
+                      <td 
+                        className="alert-title-cell" 
+                        style={{ cursor: 'pointer' }} 
+                        onClick={() => setSelectedAlertId(alert.id)}
+                        title="Click to view AI playbook insights"
+                      >
                         <span className="alert-dot" style={{ backgroundColor: `var(--sev-${sev})` }}></span>
-                        <span>{alert.title}</span>
+                        <span style={{ textDecoration: 'underline', textDecorationStyle: 'dotted' }}>{alert.title}</span>
                       </td>
                       <td className="source-cell">{alert.source_ip}</td>
                       <td className="category-cell">{alert.category || 'Security'}</td>
@@ -216,6 +224,10 @@ function AlertsGrid() {
           )}
         </div>
       </div>
+
+      {selectedAlertId && (
+        <AIPlaybookDrawer alertId={selectedAlertId} onClose={() => setSelectedAlertId(null)} />
+      )}
     </>
   )
 }
