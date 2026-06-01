@@ -6,7 +6,7 @@ from sqlalchemy import text
 from app.core.config import settings
 from app.core.database import init_db, get_db, SessionLocal
 from app.core.logging import logger
-from app.api.v1.endpoints import logs, rules, alerts
+from app.api.v1.endpoints import logs, rules, alerts, cases
 from app.services.queue_service import start_worker, stop_worker
 from app.services.rule_loader import refresh_rules
 from app.services.websocket_manager import manager
@@ -64,6 +64,7 @@ async def on_shutdown():
 app.include_router(logs.router, prefix="/api/v1/logs", tags=["Logs"])
 app.include_router(rules.router, prefix="/api/v1/rules", tags=["Rules"])
 app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["Alerts"])
+app.include_router(cases.router, prefix="/api/v1/cases", tags=["Cases"])
 
 @app.websocket("/ws/alerts")
 async def websocket_alerts_endpoint(websocket: WebSocket):

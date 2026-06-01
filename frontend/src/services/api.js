@@ -68,3 +68,97 @@ export async function ingestLogs(logsList, asyncMode = false) {
     return null
   }
 }
+
+/**
+ * Fetches incident cases from the backend.
+ */
+export async function getCases(status = '', severity = '') {
+  const params = new URLSearchParams()
+  if (status) params.append('status', status)
+  if (severity) params.append('severity', severity)
+  
+  const url = `${API_BASE_URL}/cases?${params.toString()}`
+  
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`)
+    }
+    return await response.json()
+  } catch (error) {
+    console.error('Failed to fetch cases:', error)
+    return []
+  }
+}
+
+/**
+ * Creates a new incident case ticket.
+ */
+export async function createCase(caseData) {
+  const url = `${API_BASE_URL}/cases`
+  
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(caseData)
+    })
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`)
+    }
+    return await response.json()
+  } catch (error) {
+    console.error('Failed to create case:', error)
+    return null
+  }
+}
+
+/**
+ * Updates an existing incident case.
+ */
+export async function updateCase(caseId, updateData) {
+  const url = `${API_BASE_URL}/cases/${caseId}`
+  
+  try {
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updateData)
+    })
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`)
+    }
+    return await response.json()
+  } catch (error) {
+    console.error(`Failed to update case ${caseId}:`, error)
+    return null
+  }
+}
+
+/**
+ * Associates a security alert to a case.
+ */
+export async function linkAlertToCase(caseId, alertId) {
+  const url = `${API_BASE_URL}/cases/${caseId}/alerts?alert_id=${alertId}`
+  
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`)
+    }
+    return await response.json()
+  } catch (error) {
+    console.error(`Failed to link alert ${alertId} to case ${caseId}:`, error)
+    return null
+  }
+}
+
