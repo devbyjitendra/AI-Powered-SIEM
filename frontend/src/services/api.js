@@ -162,3 +162,44 @@ export async function linkAlertToCase(caseId, alertId) {
   }
 }
 
+/**
+ * Fetches all detection rules.
+ */
+export async function getRules() {
+  const url = `${API_BASE_URL}/rules`
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`)
+    }
+    return await response.json()
+  } catch (error) {
+    console.error('Failed to fetch rules:', error)
+    return []
+  }
+}
+
+/**
+ * Updates a detection rule's parameters (e.g. is_active).
+ */
+export async function updateRule(ruleId, ruleData) {
+  const url = `${API_BASE_URL}/rules/${ruleId}`
+  try {
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(ruleData)
+    })
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`)
+    }
+    return await response.json()
+  } catch (error) {
+    console.error(`Failed to update rule ${ruleId}:`, error)
+    return null
+  }
+}
+
+

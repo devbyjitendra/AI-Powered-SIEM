@@ -7,6 +7,7 @@ import ThreatMap from './components/ThreatMap.jsx'
 import AlertsGrid from './components/AlertsGrid.jsx'
 import Simulator from './components/Simulator.jsx'
 import CaseManagement from './components/CaseManagement.jsx'
+import SettingsPanel from './components/SettingsPanel.jsx'
 
 function App() {
   const [activeTab, setActiveTab] = useState('Dashboard')
@@ -44,6 +45,8 @@ function App() {
       case 'Incidents':
       case 'Case Management':
         return <CaseManagement />
+      case 'Settings':
+        return <SettingsPanel />
       default:
         return (
           <>
