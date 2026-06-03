@@ -37,24 +37,24 @@ This project focuses on centralized logging, event monitoring, alert generation,
 # 📁 Project Structure
 
 ```bash
-siem-backend/
+AI-Powered-SIEM/
+├── backend/
+│   ├── app/                  # FastAPI Application Core
+│   ├── tests/                # Pytest Suite
+│   ├── Dockerfile            # Backend Container Config
+│   └── requirements.txt      # Python Dependencies
 │
-├── app/
-│   ├── api/
-│   ├── core/
-│   ├── middleware/
-│   ├── utils/
-│   ├── tests/
-│   └── main.py
+├── frontend/
+│   ├── src/                  # React Dashboard Components & Hooks
+│   ├── index.html
+│   ├── vite.config.js
+│   ├── package.json          # Node Dependencies
+│   └── Dockerfile            # Nginx Multi-stage Container Config
 │
-├── docker/
-├── postman/
-│
-├── requirements.txt
-├── Dockerfile
-├── docker-compose.yml
-├── README.md
-└── .gitignore
+├── docker-compose.yml        # Multi-container Orchestration
+├── development_plan.md       # Roadmap & Acceleration Schedule
+├── progress.md               # Day-by-Day Milestone Tracker
+└── Readme.md                 # Documentation
 ```
 
 ---
@@ -64,7 +64,7 @@ siem-backend/
 ## 1️⃣ Clone Repository
 
 ```bash
-git clone https://github.com/your-username/AI-Powered-SIEM.git
+git clone https://github.com/devbyjitendra/AI-Powered-SIEM.git
 cd AI-Powered-SIEM
 ```
 
@@ -95,7 +95,7 @@ source venv/bin/activate
 ## 3️⃣ Install Dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 ```
 
 ---
@@ -107,10 +107,11 @@ Create a `.env` file in the root directory.
 ## Example
 
 ```env
-APP_NAME=SIEM Backend
+APP_NAME="AI-Powered SIEM"
 DEBUG=True
-DATABASE_URL=postgresql://user:password@localhost/siemdb
-SECRET_KEY=your_secret_key
+DATABASE_URL=sqlite:///./siem_database.db
+GEMINI_API_KEY=your_google_gemini_api_key_here
+ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 ```
 
 ---
@@ -118,6 +119,7 @@ SECRET_KEY=your_secret_key
 # ▶️ Run Development Server
 
 ```bash
+cd backend
 uvicorn app.main:app --reload
 ```
 
@@ -142,11 +144,19 @@ Once the server is running:
 
 # 🐳 Docker Setup
 
-Build and run containers:
+Build and run the multi-container environment:
 
 ```bash
 docker-compose up --build
 ```
+
+Access services at:
+
+| Component | Port / URL |
+| --------- | ---------- |
+| Frontend Dashboard | [http://localhost](http://localhost) (Port 80) |
+| Backend API Server | [http://localhost:8000](http://localhost:8000) (Port 8000) |
+
 
 ---
 
