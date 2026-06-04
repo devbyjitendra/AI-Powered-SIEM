@@ -1,4 +1,15 @@
 const getApiBaseUrl = () => {
+  let url = import.meta.env.VITE_API_BASE_URL
+  if (url) {
+    url = url.trim()
+    if (url.endsWith('/')) {
+      url = url.slice(0, -1)
+    }
+    if (!url.endsWith('/api/v1')) {
+      url = `${url}/api/v1`
+    }
+    return url
+  }
   let host = typeof window !== 'undefined' ? (window.location.hostname || '127.0.0.1') : '127.0.0.1'
   if (host === 'localhost') {
     host = '127.0.0.1'

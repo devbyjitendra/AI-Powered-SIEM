@@ -93,6 +93,14 @@ app.include_router(rules.router, prefix="/api/v1/rules", tags=["Rules"])
 app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["Alerts"])
 app.include_router(cases.router, prefix="/api/v1/cases", tags=["Cases"])
 
+@app.get("/")
+def read_root():
+    return {
+        "message": "AI-Powered SIEM API Backend is running",
+        "health_check": "/api/v1/health",
+        "docs": "/docs"
+    }
+
 @app.websocket("/ws/alerts")
 async def websocket_alerts_endpoint(websocket: WebSocket):
     """
