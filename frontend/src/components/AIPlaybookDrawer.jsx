@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { X, Sparkles, ShieldAlert, Check, Copy, AlertTriangle, ShieldCheck } from 'lucide-react'
 
-function AIPlaybookDrawer({ alertId, onClose }) {
+function AIPlaybookDrawer({ alertId, onClose, integrationStates }) {
   const [playbook, setPlaybook] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -9,6 +9,11 @@ function AIPlaybookDrawer({ alertId, onClose }) {
 
   useEffect(() => {
     if (!alertId) return
+
+    if (integrationStates?.gemini === false) {
+      setLoading(false)
+      return
+    }
 
     const fetchPlaybook = async () => {
       setLoading(true)
@@ -37,7 +42,7 @@ function AIPlaybookDrawer({ alertId, onClose }) {
             })
           }
         } else {
-          throw new Error('AI analysis succeeded but no playbook payload was returned.')
+          throw new Error('AI analysis succeeded but no playbook playbook was returned.')
         }
       } catch (err) {
         console.error(err)
@@ -48,7 +53,7 @@ function AIPlaybookDrawer({ alertId, onClose }) {
     }
 
     fetchPlaybook()
-  }, [alertId])
+  }, [alertId, integrationStates?.gemini])
 
   const handleCopy = () => {
     if (!playbook || !playbook.suggested_firewall_rule) return
@@ -75,7 +80,15 @@ function AIPlaybookDrawer({ alertId, onClose }) {
 
         {/* Scrollable Content */}
         <div className="drawer-body">
-          {loading ? (
+          {integrationStates?.gemini === false ? (
+            <div className="drawer-error-state" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '40px 20px', gap: '16px' }}>
+              <div style={{ fontSize: '48px' }}>🔒</div>
+              <h4 style={{ color: 'hsl(var(--sev-critical))', margin: 0, fontSize: '1.1rem' }}>AI Playbook Agent Offline</h4>
+              <p style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.85rem', lineHeight: 1.5, margin: 0 }}>
+                The Gemini AI Analyst Agent integration is currently disconnected. Re-enable the connection inside the Integrations Command Console to unlock AI security analysis.
+              </p>
+            </div>
+          ) : loading ? (
             <div className="drawer-loader-container">
               <div className="glowing-spinner" />
               <span className="loader-text">Gemini is analyzing threat payload...</span>

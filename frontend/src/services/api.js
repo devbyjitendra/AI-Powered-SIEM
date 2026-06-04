@@ -1,12 +1,23 @@
-const API_BASE_URL = 'http://127.0.0.1:8000/api/v1'
+const getApiBaseUrl = () => {
+  let host = typeof window !== 'undefined' ? (window.location.hostname || '127.0.0.1') : '127.0.0.1'
+  if (host === 'localhost') {
+    host = '127.0.0.1'
+  }
+  return `http://${host}:8000/api/v1`
+}
+const API_BASE_URL = getApiBaseUrl()
+
 
 /**
  * Fetches alerts from the backend, supporting status and severity filters.
  */
-export async function getAlerts(status = '', severity = '') {
+export async function getAlerts(status = '', severity = '', startTime = '', endTime = '') {
   const params = new URLSearchParams()
   if (status) params.append('status', status)
   if (severity) params.append('severity', severity)
+  if (startTime) params.append('start_time', startTime)
+  if (endTime) params.append('end_time', endTime)
+  params.append('_t', Date.now())
   
   const url = `${API_BASE_URL}/alerts?${params.toString()}`
   
@@ -76,6 +87,7 @@ export async function getCases(status = '', severity = '') {
   const params = new URLSearchParams()
   if (status) params.append('status', status)
   if (severity) params.append('severity', severity)
+  params.append('_t', Date.now())
   
   const url = `${API_BASE_URL}/cases?${params.toString()}`
   
@@ -106,11 +118,13 @@ export async function createCase(caseData) {
       body: JSON.stringify(caseData)
     })
     if (!response.ok) {
-      throw new Error(`API error: ${response.statusText}`)
+      const errText = await response.text()
+      throw new Error(`HTTP ${response.status} - ${errText}`)
     }
     return await response.json()
   } catch (error) {
     console.error('Failed to create case:', error)
+    alert('Failed to escalate case. Error: ' + error.message)
     return null
   }
 }
@@ -140,6 +154,25 @@ export async function updateCase(caseId, updateData) {
 }
 
 /**
+ * Deletes a security incident case.
+ */
+export async function deleteCase(caseId) {
+  const url = `${API_BASE_URL}/cases/${caseId}`
+  try {
+    const response = await fetch(url, {
+      method: 'DELETE'
+    })
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`)
+    }
+    return true
+  } catch (error) {
+    console.error(`Failed to delete case ${caseId}:`, error)
+    return false
+  }
+}
+
+/**
  * Associates a security alert to a case.
  */
 export async function linkAlertToCase(caseId, alertId) {
@@ -150,14 +183,17 @@ export async function linkAlertToCase(caseId, alertId) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify({})
     })
     if (!response.ok) {
-      throw new Error(`API error: ${response.statusText}`)
+      const errText = await response.text()
+      throw new Error(`HTTP ${response.status} - ${errText}`)
     }
     return await response.json()
   } catch (error) {
     console.error(`Failed to link alert ${alertId} to case ${caseId}:`, error)
+    alert('Failed to link case. Error: ' + error.message)
     return null
   }
 }
@@ -166,7 +202,7 @@ export async function linkAlertToCase(caseId, alertId) {
  * Fetches all detection rules.
  */
 export async function getRules() {
-  const url = `${API_BASE_URL}/rules`
+  const url = `${API_BASE_URL}/rules?_t=${Date.now()}`
   try {
     const response = await fetch(url)
     if (!response.ok) {
@@ -199,6 +235,46 @@ export async function updateRule(ruleId, ruleData) {
   } catch (error) {
     console.error(`Failed to update rule ${ruleId}:`, error)
     return null
+  }
+}
+
+/**
+ * Fetches real-time dashboard statistics and database counts.
+ */
+export async function getDashboardStats(interval = '5m') {
+  const url = `${API_BASE_URL}/logs/stats?interval=${interval}&_t=${Date.now()}`
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`)
+    }
+    return await response.json()
+  } catch (error) {
+    console.error('Failed to fetch dashboard stats:', error)
+    return null
+  }
+}
+
+/**
+ * Sends a custom security message to the AI Assistant endpoint.
+ */
+export async function askAIChat(prompt) {
+  const url = `${API_BASE_URL}/alerts/chat`
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ prompt })
+    })
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`)
+    }
+    return await response.json()
+  } catch (error) {
+    console.error('Failed to communicate with AI Assistant:', error)
+    return { response: `Could not connect to the AI Assistant service. Details: ${error.message || String(error)}. Please verify your backend server is active.` }
   }
 }
 

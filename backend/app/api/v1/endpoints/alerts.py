@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -7,7 +8,8 @@ from app.core.database import get_db
 from app.core.logging import logger
 from app.models.models import Alert
 from app.models.schemas import AlertResponse
-from app.services.gemini_service import generate_security_playbook
+from app.services.gemini_service import generate_security_playbook, ask_gemini_assistant, stream_gemini_assistant
+from fastapi.responses import StreamingResponse
 
 router = APIRouter()
 
@@ -15,11 +17,13 @@ router = APIRouter()
 def get_alerts(
     status: Optional[str] = None,
     severity: Optional[str] = None,
+    start_time: Optional[datetime] = None,
+    end_time: Optional[datetime] = None,
     db: Session = Depends(get_db)
 ):
     """
-    Retrieve all security alerts, with optional filtering by status (NEW, ACKNOWLEDGED, RESOLVED)
-    or severity (LOW, MEDIUM, HIGH, CRITICAL).
+    Retrieve all security alerts, with optional filtering by status (NEW, ACKNOWLEDGED, RESOLVED),
+    severity (LOW, MEDIUM, HIGH, CRITICAL), or time range.
     """
     query = db.query(Alert)
     
@@ -27,9 +31,13 @@ def get_alerts(
         query = query.filter(Alert.status == status.upper())
     if severity:
         query = query.filter(Alert.severity == severity.upper())
+    if start_time:
+        query = query.filter(Alert.timestamp >= start_time.replace(tzinfo=None))
+    if end_time:
+        query = query.filter(Alert.timestamp <= end_time.replace(tzinfo=None))
         
-    # Order by newest alerts first
-    return query.order_by(Alert.timestamp.desc()).all()
+    # Order by newest alerts first, limit to 250 to avoid relationship stitching bottlenecks
+    return query.order_by(Alert.timestamp.desc()).limit(250).all()
 
 @router.put("/{alert_id}/status", response_model=AlertResponse)
 def update_alert_status(
@@ -122,4 +130,23 @@ async def analyze_alert_endpoint(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Could not persist AI analysis to the database."
         )
+
+@router.post("/chat")
+async def ask_ai_chat_endpoint(
+    payload: dict
+):
+    """
+    Accepts a user chat prompt and streams the AI Security Assistant response.
+    """
+    prompt = payload.get("prompt", "")
+    if not prompt:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Prompt cannot be empty."
+        )
+    
+    return StreamingResponse(
+        stream_gemini_assistant(prompt),
+        media_type="text/plain"
+    )
 

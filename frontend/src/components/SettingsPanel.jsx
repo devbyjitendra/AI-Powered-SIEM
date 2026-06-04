@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Settings, ShieldAlert, Wifi, Plus, Trash2, CheckCircle2 } from 'lucide-react'
+import { Settings, ShieldAlert, Wifi, Plus, Trash2, CheckCircle2, Key, BellRing, Database } from 'lucide-react'
 import { getRules, updateRule } from '../services/api'
 
 const DEFAULT_INTEL_FEEDS = [
@@ -17,6 +17,17 @@ function SettingsPanel() {
   const [newIp, setNewIp] = useState('')
   const [newCountry, setNewCountry] = useState('')
   const [newSeverity, setNewSeverity] = useState('HIGH')
+
+  // Additional settings states
+  const [geminiKey, setGeminiKey] = useState('••••••••••••••••••••••••••••••••')
+  const [slackWebhook, setSlackWebhook] = useState('https://hooks.slack.com/services/T00000000/B00000000/XXXXXX')
+  const [slackEnabled, setSlackEnabled] = useState(true)
+  const [emailEnabled, setEmailEnabled] = useState(false)
+  const [pagerDutyEnabled, setPagerDutyEnabled] = useState(false)
+  const [notifySeverity, setNotifySeverity] = useState('HIGH')
+  const [retentionPeriod, setRetentionPeriod] = useState('30')
+  const [backupSchedule, setBackupSchedule] = useState('daily')
+  const [saveSuccess, setSaveSuccess] = useState(false)
 
   const loadRules = async () => {
     setLoadingRules(true)
@@ -67,22 +78,39 @@ function SettingsPanel() {
     setIntelFeeds(prev => prev.filter((_, i) => i !== index))
   }
 
+  const handleSaveConfigs = () => {
+    setSaveSuccess(true)
+    setTimeout(() => setSaveSuccess(false), 3000)
+  }
+
   return (
     <div className="settings-layout">
       {/* Header */}
-      <div style={{ marginBottom: '20px' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#fff', fontFamily: "'Outfit', sans-serif" }}>
-          Threat Configurations & Rules
-        </h1>
-        <span style={{ fontSize: '0.85rem', color: 'hsl(var(--text-secondary))' }}>
-          Configure live correlation signatures, threat feeds, and security command controls.
-        </span>
+      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#fff', fontFamily: "'Outfit', sans-serif" }}>
+            Threat Configurations & Rules
+          </h1>
+          <span style={{ fontSize: '0.85rem', color: 'hsl(var(--text-secondary))' }}>
+            Configure live correlation signatures, threat feeds, and security command controls.
+          </span>
+        </div>
+        <button 
+          className="ai-gradient-btn ask-ai-btn" 
+          onClick={handleSaveConfigs}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontSize: '0.85rem' }}
+        >
+          {saveSuccess ? <CheckCircle2 size={16} /> : <Settings size={16} />}
+          <span>{saveSuccess ? 'Configurations Saved' : 'Save All Changes'}</span>
+        </button>
       </div>
 
       <div className="simulator-grid">
-        {/* Left - Active Correlation Rules */}
-        <div className="simulator-card-column">
-          <div className="glass-panel simulator-card">
+        {/* Left Column */}
+        <div className="simulator-card-column" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          
+          {/* Card 1 - Active Correlation Rules */}
+          <div className="glass-panel simulator-card" style={{ height: 'fit-content' }}>
             <h3 className="card-title">
               <ShieldAlert size={18} className="card-icon" /> Threat Detection Rules
             </h3>
@@ -112,11 +140,96 @@ function SettingsPanel() {
               </div>
             )}
           </div>
+
+          {/* Card 3 - API & Integration Configurations */}
+          <div className="glass-panel simulator-card" style={{ height: 'fit-content' }}>
+            <h3 className="card-title">
+              <Key size={18} className="card-icon" style={{ color: 'hsl(var(--color-ai-cyan))' }} /> AI & Integration Keys
+            </h3>
+            <div className="settings-form" style={{ gap: '16px' }}>
+              <div className="form-group">
+                <label className="form-label" htmlFor="gemini-api-key">Gemini AI Analyst Token</label>
+                <input 
+                  type="password" 
+                  id="gemini-api-key"
+                  className="search-input" 
+                  value={geminiKey}
+                  onChange={(e) => setGeminiKey(e.target.value)}
+                  disabled={true}
+                  placeholder="Configured via server .env"
+                  style={{ borderRadius: '6px', padding: '10px 14px', fontSize: '0.8rem', opacity: 0.5, cursor: 'not-allowed' }}
+                />
+                <span style={{ fontSize: '0.7rem', color: 'hsl(var(--text-muted))', marginTop: '4px' }}>
+                  Managed securely via the server environment (.env) configuration file.
+                </span>
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="slack-webhook">Slack Incoming Webhook URL</label>
+                <input 
+                  type="text" 
+                  id="slack-webhook"
+                  className="search-input" 
+                  value={slackWebhook}
+                  onChange={(e) => setSlackWebhook(e.target.value)}
+                  disabled={true}
+                  placeholder="Configured via server .env"
+                  style={{ borderRadius: '6px', padding: '10px 14px', fontSize: '0.8rem', opacity: 0.5, cursor: 'not-allowed' }}
+                />
+                <span style={{ fontSize: '0.7rem', color: 'hsl(var(--text-muted))', marginTop: '4px' }}>
+                  Managed securely via the server environment (.env) configuration file.
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 5 - Data Retention & Policies */}
+          <div className="glass-panel simulator-card" style={{ height: 'fit-content' }}>
+            <h3 className="card-title">
+              <Database size={18} className="card-icon" style={{ color: '#10b981' }} /> Compliance & Data Retention
+            </h3>
+            <div className="settings-form" style={{ gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="retention-days">Log Retention Policy</label>
+                  <select 
+                    id="retention-days"
+                    className="chart-select" 
+                    value={retentionPeriod} 
+                    onChange={(e) => setRetentionPeriod(e.target.value)}
+                    style={{ height: '40px', background: 'hsl(var(--bg-dark))', border: '1px solid hsl(var(--border-color))', borderRadius: '8px' }}
+                  >
+                    <option value="7">7 Days</option>
+                    <option value="30">30 Days</option>
+                    <option value="90">90 Days</option>
+                    <option value="365">1 Year (PCI-DSS)</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="backup-schedule">DB Backups</label>
+                  <select 
+                    id="backup-schedule"
+                    className="chart-select" 
+                    value={backupSchedule} 
+                    onChange={(e) => setBackupSchedule(e.target.value)}
+                    style={{ height: '40px', background: 'hsl(var(--bg-dark))', border: '1px solid hsl(var(--border-color))', borderRadius: '8px' }}
+                  >
+                    <option value="hourly">Hourly</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="none">Disabled</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        {/* Right - Threat Intelligence Feeds */}
-        <div className="simulator-card-column">
-          <div className="glass-panel simulator-card">
+        {/* Right Column */}
+        <div className="simulator-card-column" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          
+          {/* Card 2 - Threat Intelligence Feeds */}
+          <div className="glass-panel simulator-card" style={{ height: 'fit-content' }}>
             <h3 className="card-title">
               <Wifi size={18} className="card-icon" /> Live Threat Intelligence Feeds
             </h3>
@@ -184,6 +297,69 @@ function SettingsPanel() {
               </table>
             </div>
           </div>
+
+          {/* Card 4 - Alert Notification Routing */}
+          <div className="glass-panel simulator-card" style={{ height: 'fit-content' }}>
+            <h3 className="card-title">
+              <BellRing size={18} className="card-icon" style={{ color: '#f59e0b' }} /> Alert Routing & Notifications
+            </h3>
+            <div className="settings-form" style={{ gap: '14px' }}>
+              
+              <div className="toggle-switch-wrapper" style={{ justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: '600' }}>Slack Notifications</span>
+                  <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }}>Broadcast warnings to Slack ops channels</span>
+                </div>
+                <div className="toggle-switch-wrapper" onClick={() => setSlackEnabled(!slackEnabled)}>
+                  <div className={`toggle-track ${slackEnabled ? 'active' : ''}`}>
+                    <div className="toggle-thumb" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="toggle-switch-wrapper" style={{ justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: '600' }}>Email Notification Digest</span>
+                  <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }}>Send hourly alert summary digest</span>
+                </div>
+                <div className="toggle-switch-wrapper" onClick={() => setEmailEnabled(!emailEnabled)}>
+                  <div className={`toggle-track ${emailEnabled ? 'active' : ''}`}>
+                    <div className="toggle-thumb" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="toggle-switch-wrapper" style={{ justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: '600' }}>PagerDuty Integration</span>
+                  <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }}>Call on-duty engineers for CRITICAL anomalies</span>
+                </div>
+                <div className="toggle-switch-wrapper" onClick={() => setPagerDutyEnabled(!pagerDutyEnabled)}>
+                  <div className={`toggle-track ${pagerDutyEnabled ? 'active' : ''}`}>
+                    <div className="toggle-thumb" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginTop: '10px' }}>
+                <label className="form-label" htmlFor="min-sev">Notification Minimum Severity</label>
+                <select 
+                  id="min-sev"
+                  className="chart-select" 
+                  value={notifySeverity} 
+                  onChange={(e) => setNotifySeverity(e.target.value)}
+                  style={{ height: '40px', background: 'hsl(var(--bg-dark))', border: '1px solid hsl(var(--border-color))', borderRadius: '8px' }}
+                >
+                  <option value="INFO">Info & Above</option>
+                  <option value="WARNING">Warning & Above</option>
+                  <option value="HIGH">High & Above</option>
+                  <option value="CRITICAL">Critical Only</option>
+                </select>
+              </div>
+
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

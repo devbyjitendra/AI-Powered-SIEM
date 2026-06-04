@@ -1,0 +1,9 @@
+MISTRAL_AVAILABLE: True
+MISTRAL_ACTIVE: True
+OPENROUTER_ACTIVE: False
+MISTRAL_MODEL_NAME: mistral-large-latest
+MISTRAL_API_KEY exists: True
+MISTRAL_API_KEY length: 32
+MISTRAL_API_KEY starts with: xNIA...
+MISTRAL_API_KEY ends with: ...qDZZ
+Is dummy key check: False

@@ -5,7 +5,7 @@ from typing import Dict, List
 from sqlalchemy.orm import Session
 from fastapi.encoders import jsonable_encoder
 
-from app.models.models import SecurityLog, Alert, DetectionRule
+from app.models.models import SecurityLog, Alert, DetectionRule, IncidentCase
 from app.services.rule_loader import get_active_rules
 from app.core.logging import logger
 from app.services.websocket_manager import manager
@@ -29,10 +29,12 @@ def correlate_log(log: SecurityLog, db: Session) -> None:
     Triggers database Alerts when rules are matched or thresholds are breached.
     """
     active_rules = get_active_rules()
+    logger.info(f"[CORRELATION] Evaluating log ID {log.id}: '{log.message[:60]}...' against {len(active_rules)} active rules.")
     
     for rule in active_rules:
         # 1. Regex Pattern Matching
         if re.search(rule.pattern, log.message):
+            logger.info(f"[CORRELATION] Match found! Rule: {rule.id} ('{rule.name}') on log message: '{log.message[:60]}...'")
             
             # Special correlation logic for Brute Force (rate-based threshold checks)
             if rule.id == "RULE-AUTH-BRUTEFORCE":
@@ -58,7 +60,7 @@ def _process_brute_force(log: SecurityLog, rule: DetectionRule, db: Session) -> 
     """
     global _brute_force_tracker
     ip = log.source_ip
-    now = datetime.utcnow()
+    now = datetime.now()
     
     # Initialize list if first time
     if ip not in _brute_force_tracker:
@@ -93,7 +95,7 @@ def _process_credential_stuffing(log: SecurityLog, rule: DetectionRule, db: Sess
     global _cred_stuffing_tracker
     ip = log.source_ip
     user = log.user_id or "unknown_user"
-    now = datetime.utcnow()
+    now = datetime.now()
     
     if ip not in _cred_stuffing_tracker:
         _cred_stuffing_tracker[ip] = []
@@ -124,7 +126,7 @@ def _process_distributed_brute_force(log: SecurityLog, rule: DetectionRule, db: 
     global _dist_brute_force_tracker
     user = log.user_id
     ip = log.source_ip
-    now = datetime.utcnow()
+    now = datetime.now()
     
     if not user:
         return
@@ -157,26 +159,41 @@ def _trigger_alert(db: Session, rule: DetectionRule, log: SecurityLog, title: st
     """
     logger.warning(f"🚨 ALERT TRIGGERED: {title} - {description}")
     try:
+        case_id = None
+        # Auto-escalation of incidents disabled per user request: "case should not be auto created"
+        # if rule.severity == "CRITICAL":
+        #     try:
+        #         new_case = IncidentCase(
+        #             title=f"Auto-Escalated Incident: {title}",
+        #             severity="CRITICAL",
+        #             status="OPEN",
+        #             assigned_to="Unassigned"
+        #         )
+        #         db.add(new_case)
+        #         db.commit()
+        #         db.refresh(new_case)
+        #         case_id = new_case.id
+        #         logger.info(f"[AUTO-ESCALATION] Created incident case #{case_id} for critical alert: '{title}'")
+        #     except Exception as e_case:
+        #         db.rollback()
+        #         logger.error(f"[AUTO-ESCALATION] Failed to auto-escalate alert to case: {e_case}")
+
         alert = Alert(
             rule_id=rule.id,
             trigger_log_id=log.id,
             title=title,
             description=description,
             severity=rule.severity,
-            status="NEW"
+            status="NEW",
+            case_id=case_id
         )
         db.add(alert)
         db.commit()
         db.refresh(alert)
         
-        # Broadcast the alert via WebSocket
+        # Broadcast the alert via WebSocket thread-safely
         alert_data = jsonable_encoder(AlertResponse.from_orm(alert))
-        try:
-            loop = asyncio.get_running_loop()
-            loop.create_task(manager.broadcast(alert_data))
-        except RuntimeError:
-            # Fallback if there is no running loop in the current thread
-            asyncio.run(manager.broadcast(alert_data))
+        manager.broadcast_threadsafe(alert_data)
             
     except Exception as e:
         db.rollback()

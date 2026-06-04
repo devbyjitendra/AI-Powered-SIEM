@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   ResponsiveContainer,
   LineChart,
@@ -13,6 +13,7 @@ import {
   Area,
   AreaChart
 } from 'recharts'
+import { getDashboardStats } from '../services/api'
 
 // Timeline chart data: 00:00 to 24:00
 const TIMELINE_DATA = [
@@ -40,7 +41,9 @@ const CATEGORIES_DATA = [
   { name: 'System', value: 114, percent: '9.1%', color: '#10b981' },         // Green
 ]
 
-function SecurityCharts() {
+function SecurityCharts({ setActiveTab, stats, statsInterval, setStatsInterval }) {
+  const [selectedSource, setSelectedSource] = useState('All Sources')
+
   // Format numbers to short strings (e.g. 1.2M or 500K)
   const formatYAxis = (value) => {
     if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
@@ -48,29 +51,87 @@ function SecurityCharts() {
     return value
   }
 
+  const timelineData = stats && stats.timeline ? stats.timeline : []
+  let activeTimeline = timelineData
+  if (selectedSource === 'Authentication Only') {
+    activeTimeline = stats && stats.timeline_auth ? stats.timeline_auth : []
+  } else if (selectedSource === 'Firewall Logs') {
+    activeTimeline = stats && stats.timeline_firewall ? stats.timeline_firewall : []
+  }
+
+  let categoriesData = [
+    { name: 'Authentication', value: 0, percent: '0%', color: '#2f80ed' },
+    { name: 'Malware', value: 0, percent: '0%', color: '#ef4444' },
+    { name: 'Suspicious Activity', value: 0, percent: '0%', color: '#f59e0b' },
+    { name: 'Policy Violation', value: 0, percent: '0%', color: '#a061ff' },
+    { name: 'System', value: 0, percent: '0%', color: '#10b981' },
+  ]
+  let totalLabel = "0"
+
+  if (stats) {
+    const authVal = stats.categories.Authentication || 0
+    const webVal = stats.categories["Web Application"] || 0
+    const sysVal = stats.categories.System || 0
+    const malVal = stats.categories.Malware || 0
+    const polVal = stats.categories["Policy Violation"] || 0
+    const total = authVal + webVal + sysVal + malVal + polVal || 1
+    
+    categoriesData = [
+      { name: 'Authentication', value: authVal, percent: `${((authVal / total) * 100).toFixed(1)}%`, color: '#2f80ed' },
+      { name: 'Malware', value: malVal, percent: `${((malVal / total) * 100).toFixed(1)}%`, color: '#ef4444' },
+      { name: 'Suspicious Activity', value: webVal, percent: `${((webVal / total) * 100).toFixed(1)}%`, color: '#f59e0b' },
+      { name: 'Policy Violation', value: polVal, percent: `${((polVal / total) * 100).toFixed(1)}%`, color: '#a061ff' },
+      { name: 'System', value: sysVal, percent: `${((sysVal / total) * 100).toFixed(1)}%`, color: '#10b981' },
+    ]
+    totalLabel = (authVal + webVal + sysVal + malVal + polVal).toLocaleString()
+  }
+
   return (
     <div className="charts-grid-row">
       
       {/* Events Over Time Line Chart */}
       <div className="chart-container glass-panel events-chart-card">
-        <div className="chart-header">
+        <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
           <h3>Events Over Time</h3>
-          <div className="chart-select-wrapper">
-            <select className="chart-select">
-              <option>All Sources</option>
-              <option>Authentication Only</option>
-              <option>Firewall Logs</option>
-            </select>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div className="chart-select-wrapper">
+              <select 
+                className="chart-select" 
+                value={selectedSource}
+                onChange={(e) => setSelectedSource(e.target.value)}
+              >
+                <option>All Sources</option>
+                <option>Authentication Only</option>
+                <option>Firewall Logs</option>
+              </select>
+            </div>
+            <div className="chart-select-wrapper">
+              <select 
+                className="chart-select" 
+                value={statsInterval || '5m'}
+                onChange={(e) => setStatsInterval && setStatsInterval(e.target.value)}
+                style={{ minWidth: '95px' }}
+              >
+                <option value="5m">5 Min</option>
+                <option value="15m">15 Min</option>
+                <option value="30m">30 Min</option>
+                <option value="1h">1 Hour</option>
+              </select>
+            </div>
           </div>
         </div>
         
         <div className="chart-body" style={{ width: '100%', height: 260 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={TIMELINE_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={activeTimeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="eventGlow" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#2f80ed" stopOpacity={0.25}/>
                   <stop offset="95%" stopColor="#2f80ed" stopOpacity={0.0}/>
+                </linearGradient>
+                <linearGradient id="alertGlow" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.25}/>
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="rgba(34, 42, 76, 0.2)" strokeDasharray="3 3" vertical={false} />
@@ -100,10 +161,20 @@ function SecurityCharts() {
               <Area 
                 type="monotone" 
                 dataKey="events" 
+                name="Security Events"
                 stroke="#2f80ed" 
                 strokeWidth={2}
                 fillOpacity={1} 
                 fill="url(#eventGlow)" 
+              />
+              <Area 
+                type="monotone" 
+                dataKey="alerts" 
+                name="Triggered Alerts"
+                stroke="#ef4444" 
+                strokeWidth={2}
+                fillOpacity={1} 
+                fill="url(#alertGlow)" 
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -114,7 +185,7 @@ function SecurityCharts() {
       <div className="chart-container glass-panel donut-chart-card">
         <div className="chart-header">
           <h3>Top Alert Categories</h3>
-          <button className="view-all-link">View all</button>
+          <button className="view-all-link" onClick={() => setActiveTab && setActiveTab('Alerts')}>View all</button>
         </div>
 
         <div className="donut-chart-wrapper">
@@ -123,7 +194,7 @@ function SecurityCharts() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={CATEGORIES_DATA}
+                  data={categoriesData}
                   cx="50%"
                   cy="50%"
                   innerRadius={55}
@@ -131,7 +202,7 @@ function SecurityCharts() {
                   paddingAngle={3}
                   dataKey="value"
                 >
-                  {CATEGORIES_DATA.map((entry, index) => (
+                  {categoriesData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -139,7 +210,7 @@ function SecurityCharts() {
             </ResponsiveContainer>
             {/* Centered Total Counter */}
             <div className="donut-center-label">
-              <span className="donut-total-val">1,248</span>
+              <span className="donut-total-val">{totalLabel}</span>
               <span className="donut-total-lbl">Total</span>
             </div>
           </div>
@@ -147,7 +218,7 @@ function SecurityCharts() {
           {/* Detailed Legend List */}
           <div className="donut-legend-container">
             <ul className="donut-legend-list">
-              {CATEGORIES_DATA.map((category) => (
+              {categoriesData.map((category) => (
                 <li key={category.name} className="donut-legend-item">
                   <div className="legend-item-left">
                     <span className="legend-color-dot" style={{ backgroundColor: category.color }}></span>

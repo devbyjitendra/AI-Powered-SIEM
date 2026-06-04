@@ -12,13 +12,14 @@ import {
   Layers,
   Server,
   Settings,
-  ChevronDown
+  ChevronDown,
+  LogOut
 } from 'lucide-react'
 
 // Navigation configuration matching reference mockup image exactly
 const NAV_ITEMS = [
   { name: 'Dashboard', icon: LayoutDashboard },
-  { name: 'Alerts', icon: Bell, badge: 12 },
+  { name: 'Alerts', icon: Bell, badge: 0 },
   { name: 'Incidents', icon: ShieldAlert },
   { name: 'Threat Intelligence', icon: Globe },
   { name: 'UEBA', icon: UserCheck },
@@ -27,11 +28,10 @@ const NAV_ITEMS = [
   { name: 'Reports', icon: LineChart },
   { name: 'Automation', icon: Cpu },
   { name: 'Integrations', icon: Layers },
-  { name: 'Assets', icon: Server },
   { name: 'Settings', icon: Settings },
 ]
 
-function Sidebar({ activeTab, setActiveTab }) {
+function Sidebar({ activeTab, setActiveTab, alertsCount, onLogout }) {
   return (
     <aside className="sidebar-container">
       {/* Brand Header */}
@@ -62,7 +62,13 @@ function Sidebar({ activeTab, setActiveTab }) {
                     <IconComponent size={18} className="nav-icon" />
                     <span className="nav-text">{item.name}</span>
                   </span>
-                  {item.badge && <span className="nav-badge">{item.badge}</span>}
+                  {item.name === 'Alerts' ? (
+                    (alertsCount !== undefined ? alertsCount : item.badge) > 0 && (
+                      <span className="nav-badge">{alertsCount !== undefined ? alertsCount : item.badge}</span>
+                    )
+                  ) : (
+                    item.badge && <span className="nav-badge">{item.badge}</span>
+                  )}
                 </button>
               </li>
             )
@@ -70,16 +76,21 @@ function Sidebar({ activeTab, setActiveTab }) {
         </ul>
       </nav>
 
-      {/* User profile section at the bottom */}
-      <div className="user-profile-section">
-        <div className="user-avatar-container">
-          <div className="user-avatar">AD</div>
-          <div className="user-info">
-            <span className="user-name">Admin User</span>
-            <span className="user-role">Super Administrator</span>
+      {/* User profile and Log Out section at the bottom */}
+      <div className="user-profile-wrapper" style={{ padding: '0 8px 16px 8px', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
+        <div className="user-profile-section" style={{ border: 'none', background: 'transparent', padding: '12px 8px 4px 8px' }}>
+          <div className="user-avatar-container">
+            <div className="user-avatar">AD</div>
+            <div className="user-info">
+              <span className="user-name">Admin User</span>
+              <span className="user-role">Super Administrator</span>
+            </div>
           </div>
         </div>
-        <ChevronDown size={14} className="profile-arrow" />
+        <button className="sidebar-logout-btn" onClick={onLogout} title="Terminate Security Session">
+          <LogOut size={16} />
+          <span>Log Out</span>
+        </button>
       </div>
     </aside>
   )

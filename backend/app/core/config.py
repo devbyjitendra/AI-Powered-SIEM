@@ -16,6 +16,9 @@ class Settings:
                 for line in f:
                     line = line.strip()
                     if line and not line.startswith("#") and "=" in line:
+                        # Strip inline comments
+                        if " #" in line:
+                            line = line.split(" #", 1)[0]
                         key, val = line.split("=", 1)
                         key = key.strip()
                         val = val.strip().strip('"').strip("'")
@@ -27,8 +30,12 @@ class Settings:
         self.DEBUG: bool = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes")
         self.DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./siem_database.db")
         self.GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+        self.MISTRAL_API_KEY: str = os.getenv("MISTRAL_API_KEY", "")
+        self.MISTRAL_MODEL_NAME: str = os.getenv("MISTRAL_MODEL_NAME", "mistral-large-latest")
+        self.OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
+        self.OPENROUTER_MODEL_NAME: str = os.getenv("OPENROUTER_MODEL_NAME", "google/gemini-2.5-flash")
         
-        origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
+        origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5175,http://127.0.0.1:5175")
         self.cors_origins: List[str] = [o.strip() for o in origins.split(",") if o.strip()]
 
 settings = Settings()

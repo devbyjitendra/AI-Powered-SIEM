@@ -25,7 +25,7 @@ class SecurityLogCreate(BaseModel):
     geo_country: Optional[str] = Field(None, example="United States")
     user_agent: Optional[str] = Field(None, example="Mozilla/5.0...")
     user_id: Optional[str] = Field(None, example="admin")
-    timestamp: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    timestamp: Optional[datetime] = Field(default_factory=datetime.now)
 
     @field_validator("message", "raw_payload")
     @classmethod
@@ -81,13 +81,13 @@ class DetectionRuleResponse(DetectionRuleCreate):
 # --- Alert Schemas ---
 class AlertResponse(BaseModel):
     id: int
-    timestamp: datetime
-    rule_id: str
-    trigger_log_id: int
-    title: str
-    description: str
-    severity: str
-    status: str
+    timestamp: Optional[datetime] = None
+    rule_id: Optional[str] = None
+    trigger_log_id: Optional[int] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    severity: Optional[str] = None
+    status: Optional[str] = None
     ai_summary: Optional[str] = None
     ai_playbook: Optional[str] = None
     case_id: Optional[int] = None
@@ -114,12 +114,12 @@ class IncidentCaseUpdate(BaseModel):
 
 class IncidentCaseResponse(BaseModel):
     id: int
-    title: str
-    status: str
-    severity: str
-    assigned_to: Optional[str]
-    created_at: datetime
-    updated_at: datetime
+    title: Optional[str] = None
+    status: Optional[str] = None
+    severity: Optional[str] = None
+    assigned_to: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     alerts: List[AlertResponse] = []
 
     class Config:

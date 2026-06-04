@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { 
   Database, 
   Bell, 
@@ -7,6 +7,7 @@ import {
   TrendingUp, 
   TrendingDown 
 } from 'lucide-react'
+import { getDashboardStats } from '../services/api'
 
 // Simulated sparkline data points
 const SPARKLINE_DATA = {
@@ -32,95 +33,125 @@ const getSvgPath = (points, width, height) => {
   }).join(' ')
 }
 
-function KPICard({ title, value, trend, isPositive, icon: IconComponent, data, strokeColor, glowColor }) {
+function KPICard({ title, value, trend, isPositive, icon: IconComponent, data, strokeColor, warning }) {
   const path = getSvgPath(data, 120, 40)
   
   return (
-    <div className="kpi-card glass-panel">
+    <div className="kpi-card glass-panel" style={{ opacity: warning ? 0.85 : 1 }}>
+      {warning && (
+        <style>{`
+          @keyframes warning-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.97); }
+          }
+          .pulse-warning-badge {
+            animation: warning-pulse 2s infinite ease-in-out;
+          }
+        `}</style>
+      )}
       <div className="kpi-card-header">
-        <div className="kpi-icon-wrapper" style={{ backgroundColor: `rgba(${strokeColor}, 0.1)`, color: `rgb(${strokeColor})` }}>
+        <div className="kpi-icon-wrapper" style={{ backgroundColor: warning ? 'rgba(239, 68, 68, 0.1)' : `rgba(${strokeColor}, 0.1)`, color: warning ? 'rgb(239, 68, 68)' : `rgb(${strokeColor})` }}>
           <IconComponent size={20} />
         </div>
-        <div className="kpi-trend" style={{ color: isPositive ? 'hsl(var(--sev-low))' : 'hsl(var(--sev-critical))' }}>
-          {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-          <span>{trend}</span>
+        <div className="kpi-trend" style={{ color: warning ? 'rgb(239, 68, 68)' : (isPositive ? 'hsl(var(--sev-low))' : 'hsl(var(--sev-critical))') }}>
+          {warning ? '⚠️' : (isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />)}
+          <span>{warning ? 'OFFLINE' : trend}</span>
         </div>
       </div>
       
-      <div className="kpi-card-body">
-        <div className="kpi-stat-info">
-          <span className="kpi-title">{title}</span>
-          <h3 className="kpi-value">{value}</h3>
+      <div className="kpi-card-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
+        <div className="kpi-stat-info" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <span className="kpi-title" style={{ fontSize: '1.1rem', color: '#fff', fontWeight: '600', fontFamily: "'Outfit', sans-serif" }}>{title}</span>
+          {warning && (
+            <div style={{ marginTop: '2px' }}>
+              <span className="pulse-warning-badge" style={{
+                fontSize: '0.6rem',
+                backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                color: 'rgb(239, 68, 68)',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
+                {warning}
+              </span>
+            </div>
+          )}
         </div>
         
-        {/* SVG Sparkline */}
-        <div className="kpi-sparkline">
-          <svg width="120" height="40">
-            <defs>
-              <linearGradient id={`glow-${title}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={`rgb(${strokeColor})`} stopOpacity="0.3"/>
-                <stop offset="100%" stopColor={`rgb(${strokeColor})`} stopOpacity="0"/>
-              </linearGradient>
-            </defs>
-            {/* Area under the line */}
-            <path
-              d={`${path} L 120 40 L 0 40 Z`}
-              fill={`url(#glow-${title})`}
-            />
-            {/* Stroke Line */}
-            <path
-              d={path}
-              fill="none"
-              stroke={`rgb(${strokeColor})`}
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ filter: `drop-shadow(0px 2px 4px rgba(${strokeColor}, 0.5))` }}
-            />
-          </svg>
-        </div>
+        <h3 className="kpi-value" style={{ margin: 0, fontSize: '1.75rem', fontWeight: '700' }}>{value}</h3>
       </div>
     </div>
   )
 }
 
-function KPICards() {
+function KPICards({ integrationStates, stats }) {
+  const simulatorActive = integrationStates?.simulator !== false
+
+  const totalEvents = simulatorActive ? (stats ? stats.total_events.toLocaleString() : "...") : "SUSPENDED"
+  const totalAlerts = stats ? stats.total_alerts.toLocaleString() : "..."
+  const totalCases = stats ? stats.total_cases.toLocaleString() : "..."
+  const criticalIncidents = stats ? stats.critical_incidents.toLocaleString() : "..."
+
+  const eventsTrend = stats && stats.events_trend ? stats.events_trend : "0.0% vs yesterday"
+  const eventsIsPositive = stats && stats.events_is_positive !== undefined ? stats.events_is_positive : true
+
+  const alertsTrend = stats && stats.alerts_trend ? stats.alerts_trend : "0.0% vs yesterday"
+  const alertsIsPositive = stats && stats.alerts_is_positive !== undefined ? stats.alerts_is_positive : false
+
+  const casesTrend = stats && stats.cases_trend ? stats.cases_trend : "0.0% vs yesterday"
+  const casesIsPositive = stats && stats.cases_is_positive !== undefined ? stats.cases_is_positive : true
+
+  const criticalTrend = stats && stats.critical_trend ? stats.critical_trend : "0.0% vs yesterday"
+  const criticalIsPositive = stats && stats.critical_is_positive !== undefined ? stats.critical_is_positive : false
+
+  // Generate dynamic sparklines scaled to actual counts
+  const timelineEvents = stats && stats.timeline ? stats.timeline.map(t => t.events) : [0, 0, 0, 0, 0]
+  const totalEv = stats ? stats.total_events : 1
+  const eventsSparkline = timelineEvents
+  const alertsSparkline = timelineEvents.map(e => Math.round(e * ((stats ? stats.total_alerts : 0) / (totalEv || 1))))
+  const casesSparkline = timelineEvents.map(e => Math.round(e * ((stats ? stats.total_cases : 0) / (totalEv || 1))))
+  const criticalSparkline = timelineEvents.map(e => Math.round(e * ((stats ? stats.critical_incidents : 0) / (totalEv || 1))))
+
   return (
     <div className="kpi-grid">
       <KPICard
         title="Total Events"
-        value="12.4M"
-        trend="18.6% vs yesterday"
-        isPositive={true}
+        value={totalEvents}
+        trend={eventsTrend}
+        isPositive={eventsIsPositive}
         icon={Database}
-        data={SPARKLINE_DATA.events}
+        data={eventsSparkline}
         strokeColor="47, 128, 237" // Blue
+        warning={!simulatorActive ? "Ingestion Suspended" : undefined}
       />
       <KPICard
         title="Alerts"
-        value="1,248"
-        trend="23.5% vs yesterday"
-        isPositive={false} // Shown as concern (upward trend in alerts is negative for network, but matches mockup color)
+        value={totalAlerts}
+        trend={alertsTrend}
+        isPositive={alertsIsPositive}
         icon={Bell}
-        data={SPARKLINE_DATA.alerts}
+        data={alertsSparkline}
         strokeColor="239, 68, 68" // Red
       />
       <KPICard
-        title="Incidents"
-        value="45"
-        trend="12.5% vs yesterday"
-        isPositive={true}
+        title="Total Cases Registered"
+        value={totalCases}
+        trend={casesTrend}
+        isPositive={casesIsPositive}
         icon={ShieldAlert}
-        data={SPARKLINE_DATA.incidents}
+        data={casesSparkline}
         strokeColor="245, 158, 11" // Orange/Amber
       />
       <KPICard
         title="Critical Incidents"
-        value="7"
-        trend="75% vs yesterday"
-        isPositive={false} // Red warning
+        value={criticalIncidents}
+        trend={criticalTrend}
+        isPositive={criticalIsPositive}
         icon={Target}
-        data={SPARKLINE_DATA.critical}
+        data={criticalSparkline}
         strokeColor="239, 68, 68" // Red
       />
     </div>

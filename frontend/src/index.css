@@ -380,19 +380,14 @@ h1, h2, h3, h4, h5, h6 {
 
 .bell-badge {
   position: absolute;
-  top: 2px;
-  right: 2px;
-  background-color: hsl(var(--color-ai-glow));
-  color: #fff;
-  font-size: 0.65rem;
-  font-weight: 700;
-  width: 16px;
-  height: 16px;
+  top: 3px;
+  right: 3px;
+  background-color: hsl(var(--sev-critical, 0, 84.2%, 60.2%));
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1.5px solid hsl(var(--bg-card));
+  border: 1px solid hsl(var(--bg-card));
+  box-shadow: 0 0 6px hsl(var(--sev-critical));
 }
 
 /* KPI Cards Grid Layout */
@@ -1225,7 +1220,7 @@ h1, h2, h3, h4, h5, h6 {
 .toast-notification {
   position: fixed;
   bottom: 24px;
-  right: 24px;
+  left: 284px;
   background: rgba(15, 19, 34, 0.9);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -1587,15 +1582,396 @@ h1, h2, h3, h4, h5, h6 {
   background-color: hsl(var(--border-color));
   color: #fff;
 }
-
 .copy-success {
   color: hsl(var(--sev-low));
 }
 
+/* Notification Bell Dropdown Panel */
+.notification-bell-container {
+  position: relative;
+}
 
+.notifications-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 280px;
+  background-color: hsl(var(--bg-card)) !important;
+  border: 1px solid hsl(var(--border-color)) !important;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  margin-top: 10px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
+.dropdown-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid hsl(var(--border-color));
+}
 
+.dropdown-header h4 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+}
 
+.dropdown-body {
+  max-height: 250px;
+  overflow-y: auto;
+}
 
+.no-notifications {
+  padding: 16px;
+  text-align: center;
+  color: hsl(var(--text-secondary));
+  font-size: 0.75rem;
+  margin: 0;
+}
 
+.notifications-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 
+.notification-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.notification-title {
+  font-size: 0.75rem;
+  color: #fff;
+  font-weight: 500;
+}
+
+.notification-time {
+  font-size: 0.65rem;
+  color: hsl(var(--text-muted));
+}
+
+.notification-item.severity-critical {
+  border-left: 3px solid #ef4444;
+}
+
+.notification-item.severity-high {
+  border-left: 3px solid #f59e0b;
+}
+
+.notification-item.severity-medium {
+  border-left: 3px solid #f59e0b;
+}
+
+.notification-item.severity-low {
+  border-left: 3px solid #10b981;
+}
+
+/* LOGIN PAGE STYLING */
+.login-page-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: hsl(var(--bg-app, 222.2, 84%, 4.9%));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.login-glow-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.login-blob-1 {
+  top: 20%;
+  left: 30%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, hsl(var(--color-ai-glow)) 0%, transparent 70%);
+}
+
+.login-blob-2 {
+  bottom: 20%;
+  right: 30%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, hsl(var(--sev-critical)) 0%, transparent 70%);
+}
+
+.login-card {
+  width: 400px;
+  padding: 40px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.6);
+  z-index: 10;
+  animation: loginCardFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes loginCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-header {
+  margin-bottom: 30px;
+}
+
+.login-logo-wrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: rgba(165, 180, 252, 0.08);
+  border: 1px solid rgba(165, 180, 252, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+  box-shadow: 0 0 15px rgba(165, 180, 252, 0.1);
+}
+
+.login-shield-icon {
+  color: hsl(var(--color-ai-glow));
+  filter: drop-shadow(0 0 8px hsl(var(--color-ai-glow)));
+}
+
+.login-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.12em;
+  margin-bottom: 6px;
+}
+
+.login-subtitle {
+  font-size: 0.78rem;
+  color: hsl(var(--text-secondary));
+  margin: 0;
+}
+
+.login-error-banner {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  font-size: 0.78rem;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.login-label {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.login-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login-field-icon {
+  position: absolute;
+  left: 14px;
+  color: #6b7280;
+}
+
+.login-input {
+  width: 100%;
+  background: rgba(7, 10, 19, 0.6);
+  border: 1px solid hsl(var(--border-color, 240, 5.9%, 15%));
+  border-radius: 8px;
+  padding: 12px 14px 12px 40px;
+  color: #fff;
+  font-size: 0.85rem;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.login-input:focus {
+  border-color: hsl(var(--color-ai-glow));
+  box-shadow: 0 0 10px rgba(165, 180, 252, 0.15);
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 14px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.password-toggle-btn:hover {
+  color: #fff;
+}
+
+.login-submit-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.login-submit-btn:hover {
+  transform: translateY(-1px);
+}
+
+.login-submit-btn:active {
+  transform: translateY(0);
+}
+
+.login-footer {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.65rem;
+  color: #4b5563;
+  letter-spacing: 0.02em;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.mr-2 {
+  margin-right: 8px;
+}
+
+/* SIDEBAR LOGOUT STYLING */
+.sidebar-logout-btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #9ca3af;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+  box-sizing: border-box;
+}
+
+.sidebar-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: #fca5a5;
+}
+
+@media (max-width: 1024px) {
+  .report-workspace-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* AI Chat Typing / Breathing Dots Loader */
+.typing-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border-top-left-radius: 2px;
+  align-self: flex-start;
+  margin-bottom: 8px;
+}
+
+.typing-dot {
+  width: 7px;
+  height: 7px;
+  background-color: var(--color-ai-cyan);
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: dot-breath 1.4s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot-breath {
+  0%, 100% {
+    transform: scale(0.8);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+    background-color: var(--color-ai-glow);
+    box-shadow: 0 0 8px var(--color-ai-glow);
+  }
+}

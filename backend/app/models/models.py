@@ -22,8 +22,8 @@ class DetectionRule(Base):
     pattern = Column(String(255), nullable=False) # regex pattern or search keyword
     severity = Column(String(20), nullable=False) # LOW, MEDIUM, HIGH, CRITICAL
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     # Relationships
     alerts = relationship("Alert", back_populates="rule")
@@ -36,7 +36,7 @@ class SecurityLog(Base):
     __tablename__ = "security_logs"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    timestamp = Column(DateTime, default=datetime.now, index=True)
     event_type = Column(String(50), nullable=False, index=True) # e.g., "auth", "firewall", "web"
     severity = Column(String(20), nullable=False, index=True) # INFO, WARNING, ERROR, CRITICAL
     source_ip = Column(String(45), nullable=True, index=True)
@@ -64,8 +64,8 @@ class IncidentCase(Base):
     status = Column(String(30), default="OPEN", index=True) # OPEN, IN_PROGRESS, CLOSED
     severity = Column(String(20), nullable=False, index=True) # LOW, MEDIUM, HIGH, CRITICAL
     assigned_to = Column(String(100), nullable=True, default="Unassigned")
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now, index=True)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     # Relationships
     alerts = relationship("Alert", back_populates="case")
@@ -78,7 +78,7 @@ class Alert(Base):
     __tablename__ = "alerts"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    timestamp = Column(DateTime, default=datetime.now, index=True)
     rule_id = Column(String(50), ForeignKey("detection_rules.id"), nullable=False)
     trigger_log_id = Column(Integer, ForeignKey("security_logs.id"), nullable=False)
     title = Column(String(150), nullable=False)

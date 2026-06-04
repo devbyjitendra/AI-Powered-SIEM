@@ -31,9 +31,38 @@ def resolve_geoip(ip: Optional[str]) -> str:
     # Check IP hash or subnet ranges for simulation
     last_octet = ip.split(".")[-1]
     try:
-        val = int(last_octet) % 5
-        countries = ["United States", "United Kingdom", "Germany", "India", "Canada"]
-        return countries[val]
+        val = int(last_octet)
+        countries = [
+            "United States", "United Kingdom", "Germany", "India", "Canada",
+            "Netherlands", "Russia", "Singapore", "Brazil", "China",
+            "France", "Japan", "Australia", "Italy", "Spain",
+            "South Korea", "Mexico", "South Africa", "Switzerland", "Sweden",
+            "Norway", "Poland", "Turkey", "Saudi Arabia", "Argentina",
+            "Belgium", "Austria", "Denmark", "Finland", "Greece",
+            "Ireland", "Israel", "Portugal", "Thailand", "United Arab Emirates",
+            "Vietnam", "Egypt", "Nigeria", "Malaysia", "Indonesia",
+            "Philippines", "New Zealand", "Colombia", "Chile", "Peru",
+            "Czech Republic", "Hungary", "Romania", "Ukraine", "Pakistan",
+            "Bangladesh", "Iran", "Iraq", "Kenya", "Morocco",
+            "Algeria", "Venezuela", "Ecuador", "Bolivia", "Paraguay",
+            "Uruguay", "Panama", "Costa Rica", "Honduras", "Guatemala",
+            "El Salvador", "Nicaragua", "Cuba", "Jamaica", "Dominican Republic",
+            "Haiti", "Kazakhstan", "Uzbekistan", "Azerbaijan", "Georgia", "Armenia",
+            "Jordan", "Lebanon", "Oman", "Qatar", "Kuwait", "Bahrain", "Yemen",
+            "Sri Lanka", "Nepal", "Myanmar", "Cambodia", "Laos", "Mongolia",
+            "Luxembourg", "Bulgaria", "Croatia", "Slovakia", "Slovenia", "Estonia",
+            "Latvia", "Lithuania", "Cyprus", "Malta", "Monaco", "Andorra",
+            "Liechtenstein", "San Marino", "Ghana", "Senegal", "Cameroon", "Angola",
+            "Ethiopia", "Tanzania", "Uganda", "Zimbabwe", "Zambia", "Botswana",
+            "Namibia", "Madagascar", "Mauritius", "Tunisia", "Libya", "Sudan",
+            "Ivory Coast", "Mali", "Guinea", "Sierra Leone", "Liberia", "Togo",
+            "Benin", "Niger", "Chad", "Eritrea", "Djibouti", "Somalia", "Rwanda",
+            "Burundi", "Malawi", "Mozambique", "Eswatini", "Lesotho", "Fiji",
+            "Papua New Guinea", "Solomon Islands", "Vanuatu", "Samoa", "Tonga",
+            "Kiribati", "Tuvalu", "Nauru", "Palau", "Micronesia", "Marshall Islands",
+            "Bahamas", "Barbados", "Trinidad and Tobago", "Guyana", "Suriname"
+        ]
+        return countries[val % len(countries)]
     except ValueError:
         return "Unknown"
 

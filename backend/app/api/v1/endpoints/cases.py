@@ -144,3 +144,34 @@ def link_alert_to_case(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while linking alert to case."
         )
+
+@router.delete("/{case_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_case(
+    case_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Delete a specific security incident case.
+    """
+    db_case = db.query(IncidentCase).filter(IncidentCase.id == case_id).first()
+    if not db_case:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Incident case with ID {case_id} not found."
+        )
+    try:
+        # Also clean up references in alerts to prevent DB errors
+        alerts = db.query(Alert).filter(Alert.case_id == case_id).all()
+        for alert in alerts:
+            alert.case_id = None
+        db.delete(db_case)
+        db.commit()
+        logger.info(f"Incident Case ID {case_id} successfully deleted.")
+        return
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Failed to delete case: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not delete incident case."
+        )

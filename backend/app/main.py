@@ -1,3 +1,25 @@
+import sys
+
+# Silence Windows-specific ProactorEventLoop connection lost traceback spam (WinError 10054 / 10053)
+if sys.platform == 'win32':
+    import asyncio
+    from asyncio.proactor_events import _ProactorBasePipeTransport
+    
+    _orig_call_connection_lost = _ProactorBasePipeTransport._call_connection_lost
+    
+    def _patched_call_connection_lost(self, exc=None):
+        try:
+            _orig_call_connection_lost(self, exc)
+        except (ConnectionResetError, ConnectionAbortedError):
+            pass
+        except OSError as e:
+            if getattr(e, 'winerror', None) in (10054, 10053):
+                pass
+            else:
+                raise
+
+    _ProactorBasePipeTransport._call_connection_lost = _patched_call_connection_lost
+
 from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -21,8 +43,8 @@ app = FastAPI(
 # Set up CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -35,6 +57,11 @@ async def on_startup():
     log ingestion queue worker.
     """
     logger.info("Starting up AI-Powered SIEM Backend...")
+    
+    # Capture main event loop for WebSocket Manager
+    import asyncio
+    manager.main_loop = asyncio.get_running_loop()
+    
     try:
         init_db()
         logger.info("Database initialized and default rules seeded successfully.")
