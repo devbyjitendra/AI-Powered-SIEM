@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { X, Sparkles, Send, Trash2, ShieldAlert, ShieldCheck } from 'lucide-react'
-import { askAIChat } from '../services/api'
+import { askAIChat, API_BASE_URL } from '../services/api'
 
 function AIChatDrawer({ isOpen, onClose }) {
   const [sessions, setSessions] = useState(() => {
@@ -120,11 +120,7 @@ function AIChatDrawer({ isOpen, onClose }) {
     setLoading(true)
 
     try {
-      let host = typeof window !== 'undefined' ? (window.location.hostname || '127.0.0.1') : '127.0.0.1'
-      if (host === 'localhost') {
-        host = '127.0.0.1'
-      }
-      const url = `http://${host}:8000/api/v1/alerts/chat`
+      const url = `${API_BASE_URL}/alerts/chat`
       
       const response = await fetch(url, {
         method: 'POST',
@@ -188,6 +184,7 @@ function AIChatDrawer({ isOpen, onClose }) {
       }
     } catch (err) {
       console.error(err)
+      const errDetail = err.message || String(err)
       setSessions(prev => {
         return prev.map(s => {
           if (s.id === activeSessionId) {
@@ -197,12 +194,12 @@ function AIChatDrawer({ isOpen, onClose }) {
               if (lastMsg.role === 'assistant') {
                 updatedMessages[updatedMessages.length - 1] = {
                   role: 'assistant',
-                  content: 'An unexpected error occurred. Please verify your connection.'
+                  content: `An unexpected error occurred: ${errDetail}. Please verify your connection.`
                 }
               } else {
                 updatedMessages.push({
                   role: 'assistant',
-                  content: 'An unexpected error occurred. Please verify your connection.'
+                  content: `An unexpected error occurred: ${errDetail}. Please verify your connection.`
                 })
               }
             }
