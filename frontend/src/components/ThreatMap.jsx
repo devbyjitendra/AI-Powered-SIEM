@@ -10,7 +10,7 @@ import {
 } from 'recharts'
 import { Globe } from 'lucide-react'
 import worldMap from './world.svg'
-import { getDashboardStats } from '../services/api'
+import { getDashboardStats, API_BASE_URL } from '../services/api'
 
 const getFlagUrl = (countryName) => {
   const codes = {
@@ -139,7 +139,7 @@ function ThreatMap({ setActiveTab, stats }) {
           <div className="svg-map-wrapper" style={{ padding: '0', overflow: 'hidden', height: '260px' }}>
             <iframe
               id="threat-map-iframe"
-              src={`http://127.0.0.1:8000/api/v1/logs/map?mount=${mountTimestamp}`}
+              src={`${API_BASE_URL}/logs/map?mount=${mountTimestamp}`}
               title="Threat Map Feed"
               onLoad={handleIframeLoad}
               style={{

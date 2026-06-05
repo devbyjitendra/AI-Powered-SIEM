@@ -232,12 +232,25 @@ function AlertsGrid({
       return
     }
 
-    // Set up WebSocket connection targeting current hostname to bypass localhost/IPv6/IPv4 mismatch blocks
-    let wsHost = window.location.hostname || '127.0.0.1'
-    if (wsHost === 'localhost') {
-      wsHost = '127.0.0.1'
+    let wsUrl = import.meta.env.VITE_WS_URL
+    if (!wsUrl) {
+      if (import.meta.env.VITE_API_BASE_URL) {
+        try {
+          const apiUri = new URL(import.meta.env.VITE_API_BASE_URL)
+          const protocol = apiUri.protocol === 'https:' ? 'wss:' : 'ws:'
+          wsUrl = `${protocol}//${apiUri.host}/ws/alerts`
+        } catch (e) {
+          console.error("Failed to parse VITE_API_BASE_URL for WebSocket:", e)
+        }
+      }
     }
-    const wsUrl = `ws://${wsHost}:8000/ws/alerts`
+    if (!wsUrl) {
+      let wsHost = window.location.hostname || '127.0.0.1'
+      if (wsHost === 'localhost') {
+        wsHost = '127.0.0.1'
+      }
+      wsUrl = `ws://${wsHost}:8000/ws/alerts`
+    }
     let socket
     let reconnectTimeout
 

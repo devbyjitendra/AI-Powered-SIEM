@@ -171,4 +171,5 @@ progress.md
 backend-source.zip
 make_zip.py
 
-.env.examplesimulation_history.jsonl
+.env.example
+simulation_history.jsonl
