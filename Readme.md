@@ -4,6 +4,20 @@ A next-generation, premium Security Information and Event Management (SIEM) syst
 
 ---
 
+## 📷 Visual Demonstration
+
+### 🖥️ Platform Showcase
+![SIEM Dashboard Overview](frontend/assets/Image1.png)
+
+![Security Alerts Triage](frontend/assets/Image2.png)
+
+### 🎥 Video Walkthrough
+Watch the platform in action, featuring live threat simulation, real-time alert triage, and the AI Security Analyst assistant:
+
+https://github.com/devbyjitendra/AI-Powered-SIEM/raw/main/frontend/assets/AI%20SIEM%20Tool.mp4
+
+---
+
 ## 🌟 Key Features
 
 *   **⚡ High-Performance API Gateway**: Powered by FastAPI, offering standard RESTful endpoints for log ingestion, alert triage, incident case ticket management, and detection rule orchestration.
