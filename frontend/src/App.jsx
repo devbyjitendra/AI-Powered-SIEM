@@ -32,6 +32,7 @@ function App() {
   })
 
   const [transferCaseData, setTransferCaseData] = useState(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   
   // Lifted dashboard statistics state and interval selection
   const [stats, setStats] = useState(null)
@@ -281,8 +282,18 @@ function App() {
   }
 
   return (
-    <div className="app-layout">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} alertsCount={alertsCount} onLogout={handleLogout} />
+    <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={(tab) => {
+          setActiveTab(tab)
+          setIsSidebarOpen(false)
+        }} 
+        alertsCount={alertsCount} 
+        onLogout={handleLogout}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
       
       {/* Main Dashboard Frame */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
@@ -291,6 +302,7 @@ function App() {
           setSearchQuery={setSearchQuery} 
           onAskAI={handleAskAI} 
           integrationStates={integrationsActive}
+          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
         
         <main style={{ flex: 1, padding: '0 24px 24px 24px', overflowY: 'auto' }}>

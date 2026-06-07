@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import { getAlerts } from '../services/api'
 
-function Header({ searchQuery, setSearchQuery, onAskAI, integrationStates }) {
+function Header({ searchQuery, setSearchQuery, onAskAI, integrationStates, toggleSidebar }) {
   const [recentAlerts, setRecentAlerts] = useState([])
   const [totalCount, setTotalCount] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
@@ -35,7 +35,7 @@ function Header({ searchQuery, setSearchQuery, onAskAI, integrationStates }) {
     <header className="dashboard-header glass-panel">
       {/* Search Input Bar */}
       <div className="header-left">
-        <button className="menu-toggle-btn">
+        <button className="menu-toggle-btn" onClick={toggleSidebar}>
           <Menu size={20} />
         </button>
         <div className="search-bar-wrapper">

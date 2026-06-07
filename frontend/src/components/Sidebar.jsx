@@ -1,4 +1,3 @@
-import React, { useState } from 'react'
 import {
   LayoutDashboard,
   Bell,
@@ -13,7 +12,8 @@ import {
   Server,
   Settings,
   ChevronDown,
-  LogOut
+  LogOut,
+  X
 } from 'lucide-react'
 
 // Navigation configuration matching reference mockup image exactly
@@ -31,19 +31,55 @@ const NAV_ITEMS = [
   { name: 'Settings', icon: Settings },
 ]
 
-function Sidebar({ activeTab, setActiveTab, alertsCount, onLogout }) {
+function Sidebar({ activeTab, setActiveTab, alertsCount, onLogout, isOpen, onClose }) {
   return (
-    <aside className="sidebar-container">
-      {/* Brand Header */}
-      <div className="brand-header">
-        <div className="logo-icon">
-          <ShieldAlert size={22} className="logo-shield" />
+    <>
+      {isOpen && (
+        <div 
+          className="sidebar-backdrop" 
+          onClick={onClose}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 95,
+            transition: 'opacity 0.2s'
+          }}
+        ></div>
+      )}
+      <aside className={`sidebar-container ${isOpen ? 'open' : ''}`}>
+        {/* Brand Header */}
+        <div className="brand-header" style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="logo-icon">
+              <ShieldAlert size={22} className="logo-shield" />
+            </div>
+            <div className="brand-info">
+              <h2>AI SIEM</h2>
+              <span className="brand-slogan">Smart. Secure. Intelligent.</span>
+            </div>
+          </div>
+          <button 
+            className="sidebar-mobile-close" 
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'hsl(var(--text-secondary))',
+              cursor: 'pointer',
+              padding: '4px',
+              display: 'none', // Managed by responsive CSS media queries
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <X size={18} />
+          </button>
         </div>
-        <div className="brand-info">
-          <h2>AI SIEM</h2>
-          <span className="brand-slogan">Smart. Secure. Intelligent.</span>
-        </div>
-      </div>
 
       {/* Navigation List */}
       <nav className="sidebar-nav">
@@ -93,6 +129,7 @@ function Sidebar({ activeTab, setActiveTab, alertsCount, onLogout }) {
         </button>
       </div>
     </aside>
+    </>
   )
 }
 

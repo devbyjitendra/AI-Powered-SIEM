@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { X, Sparkles, Send, Trash2, ShieldAlert, ShieldCheck } from 'lucide-react'
+import { X, Sparkles, Send, Trash2, ShieldAlert, ShieldCheck, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { askAIChat, API_BASE_URL } from '../services/api'
 
 function AIChatDrawer({ isOpen, onClose }) {
@@ -49,6 +49,7 @@ function AIChatDrawer({ isOpen, onClose }) {
 
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const messagesEndRef = useRef(null)
 
   const suggestions = [
@@ -525,12 +526,12 @@ function AIChatDrawer({ isOpen, onClose }) {
 
   return (
     <div className="drawer-overlay" onClick={onClose}>
-      <div className="drawer-container glass-panel" onClick={(e) => e.stopPropagation()} style={{ width: '720px', display: 'flex', flexDirection: 'row', overflow: 'hidden', padding: 0 }}>
+      <div className="drawer-container chat-drawer-container glass-panel" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'row', overflow: 'hidden', padding: 0 }}>
         {/* Left Sessions Sidebar */}
         <div style={{
-          width: '200px',
-          borderRight: '1px solid rgba(255, 255, 255, 0.08)',
-          display: 'flex',
+          width: isSidebarCollapsed ? '0px' : '200px',
+          borderRight: isSidebarCollapsed ? 'none' : '1px solid rgba(255, 255, 255, 0.08)',
+          display: isSidebarCollapsed ? 'none' : 'flex',
           flexDirection: 'column',
           background: 'rgba(7, 10, 19, 0.45)',
           overflow: 'hidden'
@@ -643,11 +644,37 @@ function AIChatDrawer({ isOpen, onClose }) {
         </div>
 
         {/* Right Chat Panel */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div 
+          onClick={() => setIsSidebarCollapsed(true)}
+          style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+        >
           {/* Header */}
-          <div className="drawer-header" style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
-            <div className="drawer-title-wrapper">
-              <Sparkles size={20} className="ai-glow-icon" style={{ color: 'var(--color-ai-cyan)' }} />
+          <div className="drawer-header" style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div className="drawer-title-wrapper" style={{ display: 'flex', alignItems: 'center' }}>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsSidebarCollapsed(!isSidebarCollapsed)
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'hsl(var(--text-secondary))',
+                  cursor: 'pointer',
+                  padding: '6px',
+                  marginRight: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '4px',
+                  backgroundColor: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.05)'
+                }}
+                title={isSidebarCollapsed ? "Expand conversation list" : "Collapse conversation list"}
+              >
+                {isSidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+              </button>
+              <Sparkles size={20} className="ai-glow-icon" style={{ color: 'var(--color-ai-cyan)', marginRight: '8px' }} />
               <h2 className="ai-gradient-text" style={{ fontSize: '1.2rem', fontWeight: 700 }}>AI Security Assistant</h2>
             </div>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
